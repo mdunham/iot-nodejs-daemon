@@ -6,8 +6,10 @@ __Note:__ macOS / Mac OS X, Linux, FreeBSD and Windows are currently are support
 
 ## Prerequisites
 
- * install [bleno]()
- * install [serialport]()
+ * install [nodejs](https://github.com/nodejs/node#readme)
+ * The following are installed during the ```npm install``` command:
+	 * install [bleno](https://github.com/noble/bleno#readme)
+	 * install [serialport](https://github.com/node-serialport/node-serialport#readme)
 
 ### Bleno on Linux
 
@@ -37,3 +39,7 @@ Make sure ```node``` is on your path, if it's not, some options:
  * Change to the cl-lcr-daemon directory: ```cd cl-lcr-daemon/```
  * Install dependancies: ```npm install```
  * Start the daemon: ```npm start```
+
+## Development
+
+This application is developed by [Hot Coffey Design](http://hotcoffeydesign.com).
