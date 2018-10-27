@@ -12,6 +12,12 @@ function program_is_installed {
 	echo "$return_"
 }
 
+function program_is_running {
+	local return_=1
+	pidof $1 >/dev/null 2>&1 || { local return_=0; }
+	echo "$return_"
+}
+
 function npm_package_is_installed {
 	local return_=1
 	ls node_modules | grep $1 >/dev/null 2>&1 || { local return_=0; }
@@ -39,15 +45,19 @@ function echo_if {
 case "$1" in
 	start)
 		echo "Verifying Dependencies..."
-		echo "node    $(echo_if $(program_is_installed node))"
-		echo "bleno  $(echo_if $(npm_package_is_installed bleno))"
-		echo "serialport  $(echo_if $(npm_package_is_installed serialport))"
+		echo " - node        $(echo_if $(program_is_installed node))"
+		echo " - bleno       $(echo_if $(npm_package_is_installed bleno))"
+		echo " - serialport  $(echo_if $(npm_package_is_installed serialport))"
+		echo "-------------------------"
 		echo "Starting cl-lcr-daemon..."
-		`which node` `pwd`/../index.js &>> `pwd`/../daemon-log.log &
+		(`which node` /root/cl-lcr-daemon/index.js &>> /root/cl-lcr-daemon/daemon-log.log &)
+		sleep 2
+		echo "Checking Daemon Status - $(echo_if $(program_is_running node))"
     ;;
 	stop)
 		echo "Stopping cl-lcr-daemon..."
-		killall node
+		killall node || echo "The daemon is not running..."
+		echo "Daemon has stopped - $(echo_if $(program_is_running node))"
 	;;
 	register)
 		echo "Registering the cl-lcr-daemon init.d script..."
