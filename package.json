@@ -4,7 +4,7 @@
 	"description": "Daemon for facilitating communication between the Cleveland app and an LC meter.",
 	"main": "index.js",
 	"scripts": {
-		"install": "chmod +x ./bin/cl-lcr-* && ./bin/cl-lcr-daemon register",
+		"postinstall": "chmod +x bin/cl-lcr-* && ./bin/cl-lcr-daemon register",
 		"start": "./bin/cl-lcr-daemon start",
 		"stop": "./bin/cl-lcr-daemon stop",
 		"preuninstall": "./bin/cl-lcr-daemon unregister"
