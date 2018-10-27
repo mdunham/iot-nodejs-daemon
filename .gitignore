@@ -28,6 +28,9 @@ typings/
 .nuxt
 .vuepress/dist
 .serverless
+nbproject
+nbproject/*
+/nbproject/
 **/nbproject/private/
 build/
 nbbuild/
