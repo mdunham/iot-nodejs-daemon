@@ -1,0 +1,38 @@
+{
+	"name": "cl-lcr-deamon",
+	"version": "1.0.1",
+	"description": "Daemon for facilitating communication between the Cleveland app and an LC meter.",
+	"main": "index.js",
+	"scripts": {
+		"start": "sh ./bin/start.sh",
+		"stop": "sh ./bin/stop.sh",
+		"register": "sh ./bin/register.sh",
+		"test": "sh ./test.sh"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/mdunham/cl-lcr-deamon.git"
+	},
+	"keywords": [
+		"Cleveland",
+		"Petroleum",
+		"LCR",
+		"Meter",
+		"Cleveland",
+		"Driver",
+		"Pi",
+		"NodeJS",
+		"Raspberry",
+		"Pi"
+	],
+	"author": "Matthew Dunham <matt@hotcoffeydesign.com>",
+	"license": "UNLICENSED",
+	"bugs": {
+		"url": "https://github.com/mdunham/cl-lcr-deamon/issues"
+	},
+	"homepage": "https://github.com/mdunham/cl-lcr-deamon#readme",
+	"dependencies": {
+		"bleno": "^0.4.2",
+		"serialport": "^7.0.2"
+	}
+}
