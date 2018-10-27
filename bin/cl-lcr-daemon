@@ -44,33 +44,54 @@ function echo_if {
 
 case "$1" in
 	start)
-		echo "Verifying Dependencies..."
+		echo "--------------------------"
+		echo "-  CL-LCR-Daemon by HCD  -"
+		echo "--------------------------"
+		echo "Verifying Dependencies"
 		echo " - node        $(echo_if $(program_is_installed node))"
 		echo " - bleno       $(echo_if $(npm_package_is_installed bleno))"
 		echo " - serialport  $(echo_if $(npm_package_is_installed serialport))"
-		echo "-------------------------"
+		echo "--------------------------"
 		echo -n "Starting cl-lcr-daemon - "
 		(`which node` /root/cl-lcr-daemon/index.js &>> /root/cl-lcr-daemon/daemon-log.log &)
 		sleep 2
 		echo "$(echo_if $(program_is_running node))"
+		echo "--------------------------"
+		echo "Daemon Start Complete"
     ;;
 	stop)
-		echo -n "Stopping cl-lcr-daemon... - "
-		killall node || (echo "Not Running" && exit 0)
-		echo "$(echo_pass)"
+		echo "--------------------------"
+		echo "-  CL-LCR-Daemon by HCD  -"
+		echo "--------------------------"
+		echo -n "Stopping cl-lcr-daemon - "
+		(killall node &> /dev/null && echo "$(echo_pass)") || (echo "Not Running" && exit 0)
 	;;
 	register)
-		echo "Registering the cl-lcr-daemon init.d script..."
-		cp `pwd`/cl-lcr-daemon-initd.sh /etc/init.d/cl-lcr-daemon
-		chmod 755 /etc/init.d/cl-lcr-daemon
-		update-rc.d cl-lcr-daemon defaults
-		echo "Registration Complete - $(echo_pass)"
+		echo "--------------------------"
+		echo "-  CL-LCR-Daemon by HCD  -"
+		echo "--------------------------"
+		echo -n "Installing init.d script  - "
+		(cp /root/cl-lcr-daemon/cl-lcr-daemon-initd.sh /etc/init.d/cl-lcr-daemon && echo "$(echo_pass)") || echo "$(echo_fail)"
+		echo -n "Setting file permissions  - "
+		(chmod 755 /etc/init.d/cl-lcr-daemon && echo "$(echo_pass)") || echo "$(echo_fail)"
+		echo -n "Registering script with update-rc - "
+		(update-rc.d cl-lcr-daemon defaults && echo "$(echo_pass)") || echo "$(echo_fail)"
+		echo "--------------------------"
+		echo "Registration Complete"
 	;;
 	unregister)
-		echo "Removing the cl-lcr-daemon init.d script..."
-		update-rc.d -f cl-lcr-daemon remove
-		rm -f /etc/init.d/cl-lcr-daemon
-		echo "Unregistration Complete - $(echo_pass)"
+		echo "--------------------------"
+		echo "-  CL-LCR-Daemon by HCD  -"
+		echo "--------------------------"
+		echo -n "Stopping the daemon - "
+		killall node &> /dev/null
+		killall cl-lcr-daemon &> /dev/null
+		echo "$(echo_pass)"
+		echo -n "Removing from update-rc.d - "
+		(update-rc.d -f cl-lcr-daemon remove && echo "$(echo_pass)") || echo "$(echo_fail)"
+		echo -n "Removing init.d script    - "
+		(rm -f /etc/init.d/cl-lcr-daemon && echo "$(echo_pass)") || echo "$(echo_fail)"
+		echo "Unregister Complete"
 	;;
 	*)
 		echo "Usage: ./cl-lcr-daemon [start|stop|register|unregister]"
