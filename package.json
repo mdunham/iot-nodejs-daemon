@@ -4,10 +4,10 @@
 	"description": "Daemon for facilitating communication between the Cleveland app and an LC meter.",
 	"main": "index.js",
 	"scripts": {
-		"start": "sh ./bin/start.sh",
-		"stop": "sh ./bin/stop.sh",
-		"register": "sh ./bin/register.sh",
-		"test": "sh ./test.sh"
+		"install": "chmod +x ./bin/cl-lcr-* && ./bin/cl-lcr-daemon register"
+		"start": "./bin/cl-lcr-daemon start",
+		"stop": "./bin/cl-lcr-daemon stop",
+		"preuninstall": "./bin/cl-lcr-daemon unregister"
 	},
 	"repository": {
 		"type": "git",
