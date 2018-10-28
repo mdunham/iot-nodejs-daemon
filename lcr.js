@@ -8,7 +8,6 @@
 
 "use strict";
 
-const crc16 = require('node-crc');
 const SerialPort = require('serialport');
 
 let lcStatus = {
@@ -79,6 +78,21 @@ module.exports = function(device = 'ttyUSB0', node = 250, port = 255) {
 				rxBuffer = '';
 				dataCallback(status, data);
 			}
+		},
+		appendCrc = function(byte, crc) {
+			let XORFlag, i;
+
+			if (crc) {
+				for (i = 7; i >= 0; i--) {
+					XORFlag = ((crc & 0x8000) != 0x0000);
+					crc <<= 1;
+					crc |= ((byte >> i) & 0x01);
+					if (XORFlag)
+						crc ^= 0x1021;
+				}
+			}
+			
+			return crc;
 		};
 
 	commPort.on('open', (error) => {
@@ -116,23 +130,26 @@ module.exports = function(device = 'ttyUSB0', node = 250, port = 255) {
 			console.log('Invalid type passed to buildMessage - ' + typeof byteArray);
 			return false;
 		}
+		
 		let 
-			crc,
+			crc = 0x7E7E,
 			rawString = '',
 			message = [126, 126, node, port, lcStatus.sync, byteArray.length];
+	
 		for (var i = 0; i < byteArray.length; i++) {
 			message.push(byteArray[i]);
 		}
+		
 		for (var i = 0; i < message.length; i++) {
 			rawString = rawString + String.fromCharCode(message[i]);
+			if (i > 1) {
+				crc = appendCrc(message[i], crc);
+			}
 		}
-		crc = crc16.crc16(Buffer.from(rawString, 'utf8')).toString('hex');
-		console.log(crc);
-		message.push((crc & 0xFF));
-		message.push(((crc >> 8) & 0xFF));
+		message.push(((crc/0x0100) & 0xff).toString(16));
+		message.push(((crc%0x0100) & 0xff).toString(16));
 		console.log('Message built: ', (new Buffer.from(message, 'hex')));
 		return new Buffer.from(message, 'hex');
-		
 	};
 
 	self.checkStatus = function(callback) {
