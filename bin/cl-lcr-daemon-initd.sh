@@ -16,12 +16,12 @@ case "$1" in
   start)
     echo "Starting cl-lcr-daemon"
     # run application you want to start
-    /usr/local/bin/node /root/cl-lcr-daemon/index.js &>> /root/cl-lcr-daemon/daemon-log.log &
+    (/usr/local/bin/node /root/cl-lcr-daemon/index.js &> /root/cl-lcr-daemon/daemon-log.log &)
     ;;
   stop)
     echo "Stopping cl-lcr-daemon"
     # kill application you want to stop
-    killall node
+    (killall node &> /dev/null)
     ;;
   *)
     echo "Usage: /etc/init.d/cl-lcr-daemon {start|stop}"
