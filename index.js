@@ -13,55 +13,22 @@
 
 // Serial Comms Demo
 
-var 
-	count = 0,
-	SerialPort = require('serialport'),
-	Readline = require('@serialport/parser-readline'),
-	port = new SerialPort('/dev/ttyUSB0', {baudRate: 19200});
+import lcr from './lcr';
 
-function hex(str) {
-	var arr = [];
-	for (var i = 0, l = str.length; i < l; i++) {
-		var ascii = str.charCodeAt(i);
-		arr.push(ascii);
-	}
-	arr.push(255);
-	arr.push(255);
-	arr.push(255);
-	return new Buffer(arr);
-}
+let device = new lcr('ttyUSB0', 250, 255);
 
-function hexToString(hexx) {
-    var hex = hexx.toString();//force conversion
-    var str = '';
-    for (var i = 0; (i < hex.length && hex.substr(i, 2) !== '00'); i += 2)
-        str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-    return str;
-}
-
-port.on('readable', function () {
-	console.log('From Device: ', port.read());
-});
-
-setTimeout(() => {
-	port.write(new Buffer.from([0x7E, 0x7E, 0xFA, 0xFF, 0x02, 0x01, 0x00, 0x2F, 0x34]), function (err) {	
-		if (err) {
-			return console.log('Error on write: ', err.message);
+setInterval(() => {
+	device.checkStatus((status, productID, productName) => {
+		if (status) {
+			console.log('----- STATUS CHECK PASS -----');
+			console.log('ProductID: ' + productID + ' - Product Name: ' + productName);
+		} else {
+			console.log('----- STATUS CHECK FAIL -----');
 		}
-		console.log('Sent To Device: ', new Buffer.from([0x7E, 0x7E, 0xFA, 0xFF, 0x02, 0x01, 0x00, 0x2F, 0x34]));
 	});
 }, 2000);
 
-// End of Serial Comms Demo
-
-
-
-
-
-
-
-// Bluetooth Demo
-
+/***
 const bleno = require("bleno");
 
 console.log("Starting bleno...");
@@ -172,3 +139,5 @@ bleno.on("accept", clientAddress => console.log(`Bleno: accept ${clientAddress}`
 bleno.on("disconnect", clientAddress => console.log(`Bleno: disconnect ${clientAddress}`));
 
 // End of Bluetooth Dmeo
+
+*/
