@@ -9,6 +9,7 @@
 "use strict";
 
 const SerialPort = require('serialport');
+const debuging = true;
 
 let lcStatus = {
 	mid:        parseInt('00000001', 2),
@@ -66,14 +67,14 @@ module.exports = function(device = 'ttyUSB0', node = 250, port = 255) {
 			if (rxBuffer.length < 12) return false;
 
 			let 
-				head    = parseInt(rxBuffer.substr(0, 4), 16),
+				head    = rxBuffer.substr(0, 4),
 				to      = parseInt(rxBuffer.substr(4, 2), 16),
 				from    = parseInt(rxBuffer.substr(6, 2), 16),
 				status  = parseInt(rxBuffer.substr(8, 2), 16),
 				dataLen = parseInt(rxBuffer.substr(10, 2), 16);
-
-			if (rxBuffer.length < (12 + (dataLen * 2))) return false;
-			else if (rxBuffer.length === 6 + dataLen + 2) {
+console.log(head, dataLen, rxBuffer);
+			if (rxBuffer.length < (16 + (dataLen * 2))) return false;
+			else if (rxBuffer.length === 16 + (dataLen * 2)) {
 				let data = rxBuffer.substr(12, 2 * dataLen);
 				rxBuffer = '';
 				dataCallback(status, data);
@@ -123,6 +124,7 @@ module.exports = function(device = 'ttyUSB0', node = 250, port = 255) {
 		if (rxTimer) clearTimeout(rxTimer);
 		rxBuffer = rxBuffer + data.toString('hex');
 		rxTimer = setTimeout(verifyResponse, 100);
+		if (debuging) console.log('Received Data: ', rxBuffer);
 	});
 
 	self.buildMessage = function(byteArray) {
@@ -134,6 +136,7 @@ module.exports = function(device = 'ttyUSB0', node = 250, port = 255) {
 		let 
 			crc = 0x7E7E,
 			rawString = '',
+			hexArr = [],
 			message = [126, 126, node, port, lcStatus.sync, byteArray.length];
 	
 		for (var i = 0; i < byteArray.length; i++) {
@@ -145,31 +148,32 @@ module.exports = function(device = 'ttyUSB0', node = 250, port = 255) {
 			if (i > 1) {
 				crc = appendCrc(message[i], crc);
 			}
+			let hByte = (message[i] & 0xff).toString(16);
+			hByte = (hByte.length === 1) ? '0' + hByte : hByte.toUpperCase();
+			hexArr.push(hByte);
 		}
-		message.push(((crc/0x0100) & 0xff).toString(16));
-		message.push(((crc%0x0100) & 0xff).toString(16));
-		console.log('Message built: ', (new Buffer.from(message, 'hex')));
-		return new Buffer.from(message, 'hex');
+
+		hexArr.push(((crc%0x0100) & 0xff).toString(16));
+		hexArr.push(((crc/0x0100) & 0xff).toString(16));
+		return  Buffer.from(hexArr.join(''), 'hex');
 	};
 
 	self.checkStatus = function(callback) {
 		let buffer;
 
-		console.log('Check status called');
-
-		dataCallback = (data) => {
+		dataCallback = (status, data) => {
 			let 
 				returnCode  = data.substr(0,2),
 				productID   = data.substr(2,2),
 				productName = hexToString(data.substr(4));
 
-			console.log('LCR Status Check - Good');
+			console.log('LCR Status Check - ' + status + ' Data: ' + data);
 			callback(true, productID, productName);
 		};
 
 		failCallback = () => {
 			console.log('LCR Status Check - Bad');
-			callback(false);
+			callback(false, null, null);
 		};
 
 		if ( ! isOpen) {
@@ -189,11 +193,10 @@ module.exports = function(device = 'ttyUSB0', node = 250, port = 255) {
 			canWrite = false;
 			commPort.write(buffer, (err) => {
 				if (err) {
-					console.log('CommPort Write - Error: ' + err.message);
 					callback(false);
-				} else {
-					console.log('CommPort Write - Success: ', buffer);
 				}
+				if (debuging)
+					console.log('CommPort Write - Success: ', buffer);
 			});
 		}
 	};

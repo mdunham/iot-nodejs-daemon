@@ -17,7 +17,7 @@ let lcr = require('./lcr.js');
 
 let device = new lcr('ttyUSB0', 250, 255);
 
-setInterval(() => {
+setTimeout(() => {
 	console.log('interval...');
 	device.checkStatus((status, productID, productName) => {
 		if (status) {
