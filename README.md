@@ -51,4 +51,15 @@ __Note:__ You must be logged in as root before performing the following.
 
 ## Development
 
+__Logging Output:__ All output is logged to /root/cl-lcr-daemon/daemon-log.log
+
+ * To run as a daemon
+	 * From /root/cl-lcr-daemon/: ```/root/cl-lcr-daemon/npm run-script daemon start```
+	 * From /etc/init.d/: ```/etc/init.d/cl-lcr-daemon start```
+ * To stop the daemon
+	 * From /root/cl-lcr-daemon/: ```/root/cl-lcr-daemon/npm run-script daemon stop```
+	 * From /etc/init.d/: ```/etc/init.d/cl-lcr-daemon stop```
+ * To run locally: ```/root/cl-lcr-daemon/npm start```
+ * To stop locally: ```/root/cl-lcr-daemon/npm stop```
+
 This application is developed by [Hot Coffey Design](http://hotcoffeydesign.com).
