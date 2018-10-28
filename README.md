@@ -37,7 +37,7 @@ Make sure ```node``` is on your path, if it's not, some options:
 
 __Note:__ You must be logged in as root before performing the following.
 
- * Clone the repository: ```git clone https://github.com/mdunham/cl-lcr-deamon.git /root/```
+ * Clone the repository: ```git clone https://github.com/mdunham/cl-lcr-daemon.git /root/```
  * Change to the cl-lcr-daemon directory: ```cd /root/cl-lcr-daemon/```
  * Install dependencies: ```npm install --unsafe-perm```
 	 * __Note:__ Since you're installing as root you must use the ```--unsafe-perm``` flag
