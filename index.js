@@ -25,7 +25,7 @@ let server = new ble(device);
 
 // TODO: Add sqlite database for collecting data to send over the internet
 // TODO: GeoTracking & Security
-
+/*
 device.checkStatus((status, productID, productName) => {
 	if (status) {
 		console.log('----- STATUS CHECK PASS -----');
@@ -69,3 +69,15 @@ device.command(0x01, (status, response) => {
 	if (status) console.log('Issue command success!!!!!', response);
 	else console.log('Issue command FAil!!');
 });}, 1000);
+*/
+
+ device.getField(11, (status, response) => {
+ 	if (status) console.log('Get Field Success!!!!!', response);
+        else console.log('Get Field Said FALSE!!');
+
+        device.command(0x01, (status, response) => {
+        	if (status) console.log('Issue command success!!!!!', response);
+                else console.log('Issue command FAil!!');
+        });
+});
+
