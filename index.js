@@ -43,14 +43,14 @@ port.on('readable', function () {
 	console.log('From Device: ', port.read());
 });
 
-setInterval(() => {
+setTimeout(() => {
 	port.write(new Buffer.from([0x7E, 0x7E, 0xFA, 0xFF, 0x02, 0x01, 0x00, 0x2F, 0x34]), function (err) {	
 		if (err) {
 			return console.log('Error on write: ', err.message);
 		}
 		console.log('Sent To Device: ', new Buffer.from([0x7E, 0x7E, 0xFA, 0xFF, 0x02, 0x01, 0x00, 0x2F, 0x34]));
 	});
-}, 200);
+}, 2000);
 
 // End of Serial Comms Demo
 
