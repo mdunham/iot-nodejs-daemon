@@ -41,12 +41,31 @@ setTimeout(() => {
 	device.getMachineStatus((status, response) => {
 		if (status) console.log('Get Machine Status Success!!!!!', response);
 		else console.log('Get Machine Status Said FALSE!!');
-		//setInterval(() => {
-		//	field++;
-		//	device.getField(field, (status, response) => {
-		//		if (status) console.log('Get Field Success!!!!!', response);
-		//		else console.log('Get Field Said FALSE!!');
-		//	});
-		//}, 300);
-	});
+		
+		device.getVersion((status, response) => {
+				if (status) console.log('Get Version Success!', response);
+				else console.log('GetVersion Said FALSE!!');
+			
+		
+		device.getField(0x11, (status, response) => {
+			if (status) console.log('Get Field Success!!!!!', response);
+			else console.log('Get Field Said FALSE!!');
+			
+			device.getField(11, (status, response) => {
+				if (status) console.log('Get Field Success!!!!!', response);
+				else console.log('Get Field Said FALSE!!');
+				
+				device.command(0x01, (status, response) => {
+					if (status) console.log('Issue command success!!!!!', response);
+					else console.log('Issue command FAil!!');
+				});
+				
+			});
+		});
+	});});
 }, 2500);
+setTimeout(function(){
+device.command(0x01, (status, response) => {
+	if (status) console.log('Issue command success!!!!!', response);
+	else console.log('Issue command FAil!!');
+});}, 1000);
