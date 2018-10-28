@@ -9,7 +9,7 @@
 "use strict";
 
 const SerialPort = require('serialport');
-const debuging = true;
+const appendCrc  = require('./crc.js');
 
 let lcStatus = {
 	mid:        parseInt('00000001', 2),
@@ -72,60 +72,14 @@ module.exports = function(device = 'ttyUSB0', node = 250, port = 255) {
 				from    = parseInt(rxBuffer.substr(6, 2), 16),
 				status  = parseInt(rxBuffer.substr(8, 2), 16),
 				dataLen = parseInt(rxBuffer.substr(10, 2), 16);
-console.log(head, dataLen, rxBuffer);
+
 			if (rxBuffer.length < (16 + (dataLen * 2))) return false;
 			else if (rxBuffer.length === 16 + (dataLen * 2)) {
 				let data = rxBuffer.substr(12, 2 * dataLen);
 				rxBuffer = '';
 				dataCallback(status, data);
 			}
-		},
-		appendCrc = function(byte, crc) {
-			let XORFlag, i;
-
-			if (crc) {
-				for (i = 7; i >= 0; i--) {
-					XORFlag = ((crc & 0x8000) != 0x0000);
-					crc <<= 1;
-					crc |= ((byte >> i) & 0x01);
-					if (XORFlag)
-						crc ^= 0x1021;
-				}
-			}
-			
-			return crc;
 		};
-
-	commPort.on('open', (error) => {
-		if (error) return console.log('CommPort - Error - ' + error.message);
-		isOpen = true;
-		canWrite = true;
-		console.log('CommPort - Open - /dev/' + device);
-	});
-
-	commPort.on('close', () => {
-		isOpen = false;
-		canWrite = false;
-		console.log('CommPort - Closed - /dev/' + device);
-	});
-	
-	commPort.on('drain', () => {
-		canWrite = true;
-		console.log('CommPort - Drained - /dev/' + device);
-	});
-
-	commPort.on('error', (error) => {
-		isOpen = false;
-		canWrite = false;
-		console.log('CommPort - Error - ' + error.message);
-	});
-
-	commPort.on('data', (data) => {
-		if (rxTimer) clearTimeout(rxTimer);
-		rxBuffer = rxBuffer + data.toString('hex');
-		rxTimer = setTimeout(verifyResponse, 100);
-		if (debuging) console.log('Received Data: ', rxBuffer);
-	});
 
 	self.buildMessage = function(byteArray) {
 		if ('object' !== typeof byteArray) {
@@ -200,7 +154,38 @@ console.log(head, dataLen, rxBuffer);
 			});
 		}
 	};
+	
+	commPort.on('open', (error) => {
+		if (error) return console.log('CommPort - Error - ' + error.message);
+		isOpen = true;
+		canWrite = true;
+		console.log('CommPort - Open - /dev/' + device);
+	});
 
+	commPort.on('close', () => {
+		isOpen = false;
+		canWrite = false;
+		console.log('CommPort - Closed - /dev/' + device);
+	});
+	
+	commPort.on('drain', () => {
+		canWrite = true;
+		console.log('CommPort - Drained - /dev/' + device);
+	});
+
+	commPort.on('error', (error) => {
+		isOpen = false;
+		canWrite = false;
+		console.log('CommPort - Error - ' + error.message);
+	});
+
+	commPort.on('data', (data) => {
+		if (rxTimer) clearTimeout(rxTimer);
+		rxBuffer = rxBuffer + data.toString('hex');
+		rxTimer = setTimeout(verifyResponse, 100);
+		if (debuging) console.log('Received Data: ', rxBuffer);
+	});
+	
 	return this;
 }
 		
