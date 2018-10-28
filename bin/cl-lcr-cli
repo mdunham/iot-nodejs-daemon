@@ -51,6 +51,7 @@ case "$1" in
 		echo " - node        $(echo_if $(program_is_installed node))"
 		echo " - bleno       $(echo_if $(npm_package_is_installed bleno))"
 		echo " - serialport  $(echo_if $(npm_package_is_installed serialport))"
+		echo " - sqlite3  $(echo_if $(npm_package_is_installed sqlite3))"
 		echo "--------------------------"
 		echo -n "Starting cl-lcr-daemon - "
 		(`which node` /root/cl-lcr-daemon/index.js &>> /root/cl-lcr-daemon/daemon-log.log &)
@@ -69,6 +70,12 @@ case "$1" in
 	register)
 		echo "--------------------------"
 		echo "-  CL-LCR-Daemon by HCD  -"
+		echo "--------------------------"
+		echo "Verifying Dependencies"
+		echo " - node        $(echo_if $(program_is_installed node))"
+		echo " - bleno       $(echo_if $(npm_package_is_installed bleno))"
+		echo " - serialport  $(echo_if $(npm_package_is_installed serialport))"
+		echo " - sqlite3  $(echo_if $(npm_package_is_installed sqlite3))"
 		echo "--------------------------"
 		echo -n "Installing init.d script  - "
 		(cp /root/cl-lcr-daemon/bin/cl-lcr-daemon-initd.sh /etc/init.d/cl-lcr-daemon && echo "$(echo_pass)") || echo "$(echo_fail)"
