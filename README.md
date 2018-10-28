@@ -55,7 +55,7 @@ __Daemon Output:__ When running as a service output is logged to ```/var/log/dae
 __CLI Output:__ When running local using ```cl-lcr-cli start``` output is logged to: ```/root/cl-lcr-daemon/daemon-log.log```
 
  * To run the daemon
-	 * From /etc/init.d/: ```/etc/init.d/cl-lcr-daemon start```
+	 * As Service: ```service cl-lcr-daemon start```
 	 * Via NPM: ```npm run-script daemon start```
 	 * All output is logged to: ```/var/log/daemon.log```
  * To stop the daemon
