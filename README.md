@@ -1,7 +1,7 @@
 # Bluetooth to Serial Communications Daemon
 
 This is NodeJS application sets up a Bluetooth service that allows the Cleveland Drivers mobile application to communicate with a Liquid Controls LCR-II meter via usb-serial.
- 
+
 __Note:__ macOS / Mac OS X, Linux, FreeBSD and Windows are currently are supported, but the instructions below are for a Raspberry Pi.
 
 ## Prerequisites
@@ -64,4 +64,4 @@ __CLI Output:__ When running local using ```cl-lcr-cli start``` output is logged
  * To run locally: ```npm start``` output is logged to ```/root/cl-lcr-daemon/daemon-log.log```
  * To stop locally: ```npm stop```
 
-This application is developed by [Hot Coffey Design](http://hotcoffeydesign.com).
+This application is developed by [Matthew Dunham](http://linkedin.com/in/matthewdunham) at [Hot Coffey Design](http://hotcoffeydesign.com).
