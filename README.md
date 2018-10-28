@@ -35,15 +35,18 @@ Make sure ```node``` is on your path, if it's not, some options:
 
 ## Installation
 
- * Clone this repository: ```git clone https://github.com/mdunham/cl-lcr-deamon.git /root/```
+__Note:__ You must be logged in as root before performing the following.
+
+ * Clone the repository: ```git clone https://github.com/mdunham/cl-lcr-deamon.git /root/```
  * Change to the cl-lcr-daemon directory: ```cd /root/cl-lcr-daemon/```
- * Install dependancies: ```npm install```
+ * Install dependencies: ```npm install --unsafe-perm```
+	 * __Note:__ Since you're installing as root you must use the ```--unsafe-perm``` flag
  * Start the daemon: ```npm start```
 
 ## Register Daemon to Run on Boot
 
- * Make the daemon executable: ```chmod +x /root/cl-lcr-daemon/bin/cl-lcr-*```
- * Run the register command: ```cd /root/cl-lcr-daemon/ && ./bin/cl-lcr-daemon register``
+ * Make the CLI executable: ```chmod +x /root/cl-lcr-daemon/bin/cl-lcr-cli```
+ * Run the register command: ```cd /root/cl-lcr-cli/ && ./bin/cl-lcr-cli register``
  * Start the daemon: ```/etc/init.d/cl-lcr-daemon start```
 
 ## Development

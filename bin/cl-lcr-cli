@@ -71,7 +71,7 @@ case "$1" in
 		echo "-  CL-LCR-Daemon by HCD  -"
 		echo "--------------------------"
 		echo -n "Installing init.d script  - "
-		(cp /root/cl-lcr-daemon/cl-lcr-daemon-initd.sh /etc/init.d/cl-lcr-daemon && echo "$(echo_pass)") || echo "$(echo_fail)"
+		(cp /root/cl-lcr-daemon/bin/cl-lcr-daemon-initd.sh /etc/init.d/cl-lcr-daemon && echo "$(echo_pass)") || echo "$(echo_fail)"
 		echo -n "Setting file permissions  - "
 		(chmod 755 /etc/init.d/cl-lcr-daemon && echo "$(echo_pass)") || echo "$(echo_fail)"
 		echo -n "Registering script with update-rc - "
