@@ -13,7 +13,7 @@
 
 // Serial Comms Demo
 
-import lcr from './lcr';
+let lcr = require('./lcr.js');
 
 let device = new lcr('ttyUSB0', 250, 255);
 

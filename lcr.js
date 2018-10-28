@@ -8,8 +8,8 @@
 
 "use strict";
 
-import crc16 from 'crc/crc16kermit';
-import SerialPort from 'serialport';
+const crc16 = require('@crc/crc16kermit');
+const SerialPort = require('serialport');
 
 let lcStatus = {
 	mid:        parseInt('00000001', 2),
