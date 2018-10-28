@@ -7,6 +7,8 @@
 		"postinstall": "chmod +x bin/cl-lcr-cli && ./bin/cl-lcr-cli register",
 		"start": "./bin/cl-lcr-cli start",
 		"stop": "./bin/cl-lcr-cli stop",
+		"register": "./bin/cl-lcr-cli register",
+		"unregister": "./bin/cl-lcr-cli unregister",
 		"daemon": "/etc/init.d/cl-lcr-daemon",
 		"preuninstall": "./bin/cl-lcr-cli unregister"
 	},
