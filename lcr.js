@@ -22,7 +22,7 @@ let lcStatus = {
 	valid:      parseInt('10000000', 2)
 };
 
-export default function(device = 'ttyUSB0', node = 250, port = 255) {
+module.exports = function(device = 'ttyUSB0', node = 250, port = 255) {
 	let 
 		canWrite = false,
 		isOpen = false,
