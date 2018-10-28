@@ -51,15 +51,17 @@ __Note:__ You must be logged in as root before performing the following.
 
 ## Development
 
-__Logging Output:__ All output is logged to /root/cl-lcr-daemon/daemon-log.log
+__Daemon Output:__ When running as a service output is logged to ```/var/log/daemon.log```
+__CLI Output:__ When running local using ```cl-lcr-cli start``` output is logged to: ```/root/cl-lcr-daemon/daemon-log.log```
 
- * To run as a daemon
-	 * From /root/cl-lcr-daemon/: ```/root/cl-lcr-daemon/npm run-script daemon start```
+ * To run the daemon
 	 * From /etc/init.d/: ```/etc/init.d/cl-lcr-daemon start```
+	 * Via NPM: ```npm run-script daemon start```
+	 * All output is logged to: ```/var/log/daemon.log```
  * To stop the daemon
-	 * From /root/cl-lcr-daemon/: ```/root/cl-lcr-daemon/npm run-script daemon stop```
-	 * From /etc/init.d/: ```/etc/init.d/cl-lcr-daemon stop```
- * To run locally: ```/root/cl-lcr-daemon/npm start```
- * To stop locally: ```/root/cl-lcr-daemon/npm stop```
+	 * As a service: ```service cl-lcr-daemon stop```
+	 * Via NPM: ```npm run-script daemon stop```
+ * To run locally: ```npm start``` output is logged to ```/root/cl-lcr-daemon/daemon-log.log```
+ * To stop locally: ```npm stop```
 
 This application is developed by [Hot Coffey Design](http://hotcoffeydesign.com).
