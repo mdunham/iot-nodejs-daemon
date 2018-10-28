@@ -8,6 +8,7 @@
 
 "use strict";
 
+const debuging   = true;
 const SerialPort = require('serialport');
 const appendCrc  = require('./crc.js');
 
