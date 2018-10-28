@@ -36,7 +36,7 @@
 	"homepage": "https://github.com/mdunham/cl-lcr-deamon#readme",
 	"dependencies": {
 		"bleno": "^0.4.2",
-		"crc": "^3.8.0",
+		"node-crc": "^1.2.2",
 		"serialport": "^7.0.2"
 	}
 }

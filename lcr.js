@@ -8,7 +8,7 @@
 
 "use strict";
 
-const crc16 = require('@crc/crc16kermit');
+const crc16 = require('node-crc');
 const SerialPort = require('serialport');
 
 let lcStatus = {
@@ -24,6 +24,7 @@ let lcStatus = {
 
 module.exports = function(device = 'ttyUSB0', node = 250, port = 255) {
 	let 
+		self = this,
 		canWrite = false,
 		isOpen = false,
 		rxBuffer = '',
@@ -110,8 +111,11 @@ module.exports = function(device = 'ttyUSB0', node = 250, port = 255) {
 		rxTimer = setTimeout(verifyResponse, 100);
 	});
 
-	this.buildMessage = function(byteArray) {
-		if ('array' !== typeof byteArray) return false;
+	self.buildMessage = function(byteArray) {
+		if ('object' !== typeof byteArray) {
+			console.log('Invalid type passed to buildMessage - ' + typeof byteArray);
+			return false;
+		}
 		let 
 			crc,
 			rawString = '',
@@ -122,23 +126,19 @@ module.exports = function(device = 'ttyUSB0', node = 250, port = 255) {
 		for (var i = 0; i < message.length; i++) {
 			rawString = rawString + String.fromCharCode(message[i]);
 		}
-		crc = crc16(rawString).toString(16);
+		crc = crc16.crc16(Buffer.from(rawString, 'utf8')).toString('hex');
 		console.log(crc);
 		message.push((crc & 0xFF));
 		message.push(((crc >> 8) & 0xFF));
-		return new Buffer.from(message);
+		console.log('Message built: ', (new Buffer.from(message, 'hex')));
+		return new Buffer.from(message, 'hex');
 		
 	};
 
-	this.checkStatus = function(callback) {
+	self.checkStatus = function(callback) {
 		let buffer;
-		
-		if ( ! canWrite) {
-			setTimeout(() => {
-				this.checkStatus(callback);
-			}, 100);
-			return false;
-		}
+
+		console.log('Check status called');
 
 		dataCallback = (data) => {
 			let 
@@ -155,13 +155,20 @@ module.exports = function(device = 'ttyUSB0', node = 250, port = 255) {
 			callback(false);
 		};
 
-		if ( ! this.isOpen) {
-			this.comm.open(function(err){
+		if ( ! isOpen) {
+			commPort.open(function(err){
 				if (err) callback(false);
-				this.checkStatus(callback);
+				self.checkStatus(callback);
 			});
 		} else {
-			buffer = this.buildMessage([0]);
+			if ( ! canWrite) {
+				setTimeout(() => {
+					self.checkStatus(callback);
+				}, 100);
+				return false;
+			}
+
+			buffer = self.buildMessage([0]);
 			canWrite = false;
 			commPort.write(buffer, (err) => {
 				if (err) {
@@ -173,5 +180,7 @@ module.exports = function(device = 'ttyUSB0', node = 250, port = 255) {
 			});
 		}
 	};
+
+	return this;
 }
 		
