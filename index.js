@@ -35,19 +35,18 @@ device.checkStatus((status, productID, productName) => {
 	}
 });
 
-var field = 0x20;
-setTimeout(() => {
-	field++;
-	device.getField(field, (status, response) => {
-		if (status) console.log('Get Field Success!!!!!', response);
-		else console.log('Get Field Said FALSE!!');
-	});
-}, 500);
+var field = 0;
 
 setTimeout(() => {
-	field++;
 	device.getMachineStatus((status, response) => {
 		if (status) console.log('Get Machine Status Success!!!!!', response);
 		else console.log('Get Machine Status Said FALSE!!');
+		//setInterval(() => {
+		//	field++;
+		//	device.getField(field, (status, response) => {
+		//		if (status) console.log('Get Field Success!!!!!', response);
+		//		else console.log('Get Field Said FALSE!!');
+		//	});
+		//}, 300);
 	});
 }, 2500);
