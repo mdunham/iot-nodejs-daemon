@@ -20,8 +20,43 @@ let db = new sqlite3.Database('./db/lcr-cl.db', (err) => {
 	console.log('Connected to the SQLite database.');
 });
 
-let device = new lcr('ttyUSB0', 250, 255);
+let device = new lcr.device('ttyUSB0', 250, 255);
 let server = new ble(device);
+
+setTimeout(() => {
+	device.checkStatus((status, productID, productName) => {
+       		if (status) {
+                	console.log('STATUS ;; GOOD');
+                	console.log('ProductID: ' + productID + ' - Product Name: ' + productName);
+       		} else {
+        	        console.log('STATUS ;; FAIL');
+               	}
+        	device.getSecurity((status, productID, productName) => {
+        	        if (status) {
+	                        console.log('SECURITY ;; GOOD');
+                        	console.log('ProductID: ' + productID + ' - Product Name: ' + productName);
+                	} else {
+                        	console.log('SECURITY ;; FAIL');
+        	        }
+	        });
+
+	});
+}, 1500);
+
+
+
+
+
+
+
+
+
+
+
+
+
+/********* DEMOS
+
 
 // TODO: Add sqlite database for collecting data to send over the internet
 // TODO: GeoTracking & Security
@@ -69,7 +104,7 @@ device.command(0x01, (status, response) => {
 	if (status) console.log('Issue command success!!!!!', response);
 	else console.log('Issue command FAil!!');
 });}, 1000);
-*/
+
 
  device.getField(11, (status, response) => {
  	if (status) console.log('Get Field Success!!!!!', response);
@@ -81,3 +116,4 @@ device.command(0x01, (status, response) => {
         });
 });
 
+******/
