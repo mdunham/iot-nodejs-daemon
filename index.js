@@ -14,14 +14,21 @@ const lcr = require('./lib/lcr.js');
 const ble = require('./lib/ble.js');
 
 let 
+	// Local SQLite Database
 	db = new sqlite3.Database('./db/lcr-cl.db', (err) => {
 		if (err) {
 			console.error(err.message);
 		}
 		console.log('Connected to the SQLite database.');
 	}),
+		
+	// LCR Device API
 	device = new lcr.device('ttyUSB0', 250, 255),
+	
+	// Mobile App Bluetooth Peripherial Service
 	server = new ble(device),
+		
+	// Tell the LCR to connect loopable
 	runConnect = (count) => {
 		device.connect((status) => {
 			if ( ! status) {
