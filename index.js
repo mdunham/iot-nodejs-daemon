@@ -35,8 +35,11 @@ let
 		});
 	};
 
+// Check for the LCR meter connection
 if (device.isConnected()) {
 	console.log('------ LCR Already Connected ------');
 } else {
+	// Keep trying to connect until it's found
 	runConnect(1);
 }
+
