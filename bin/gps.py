@@ -13,9 +13,9 @@ while str.find('GGA') == -1:
 
 #parse the string for latitude and longitude
 msg = pynmea2.parse(str)
-#print msg
-#print msg.lat
-#print msg.lon
+print msg
+print msg.lat
+print msg.lon
 
 latitude = msg.lat
 longitude = msg.lon
@@ -46,7 +46,8 @@ message = "https://www.google.com/maps/?q="+latitude+","+longitude
 #Send the message
 response_code = hologram.sendMessage(message,topics=["gmail"])
 
-print hologram.getResultString(response_code)
+hologram.getResultString(response_code)
+print latitude+","+longitude
 
 #Disconnect
 hologram.network.disconnect()
