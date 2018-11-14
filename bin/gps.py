@@ -32,8 +32,10 @@ longitude = msg.longitude
 credentials = {'devicekey':'ujk{]5pX'}
 hologram = HologramCloud(credentials, network='cellular')
 
-#Attempt to connect
-result = hologram.network.connect()
+try:
+	result = hologram.network.connect()
+except:
+	print "Connected"
 
 location = hologram.network.location
 
