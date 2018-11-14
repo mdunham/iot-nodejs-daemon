@@ -14,19 +14,19 @@ while str.find('GGA') == -1:
 #parse the string for latitude and longitude
 msg = pynmea2.parse(str)
 print msg
-print msg.lat
-print msg.lon
+print msg.latitude
+print msg.longitude
 
-latitude = msg.lat
-longitude = msg.lon
+latitude = msg.latitude
+longitude = msg.longitude
 
 #Set the sign of the latitude based on the direction (N/S)
-if msg.lat_dir == 'S':
-    latitude = '-' + latitude
+#if msg.lat_dir == 'S':
+#    latitude = '-' + latitude
 
 #Set the sign of the longitude based on the direction (E/W)
-if msg.lon_dir == 'W':
-    longitude = '-' + longitude
+#if msg.lon_dir == 'W':
+#    longitude = '-' + longitude
 
 #Get a hologram instance and connect
 credentials = {'devicekey':'ujk{]5pX'}
@@ -35,11 +35,21 @@ hologram = HologramCloud(credentials, network='cellular')
 #Attempt to connect
 result = hologram.network.connect()
 
+location = hologram.network.location
+
+if location is None:
+	location = hologram.network.location
+
+if location is None:
+	location = false
+	message = latitude+","+longitude
+else:
+	message = latitude+","+longitude+"|"+location.latitude+","+location.longitude
+
 if result == False:
     print ' Failed to connect to cell network'
 
 #Our message will be a google maps link that will show the current location
-message = "https://www.google.com/maps/?q="+latitude+","+longitude
 
 #print message
 
@@ -47,7 +57,7 @@ message = "https://www.google.com/maps/?q="+latitude+","+longitude
 response_code = hologram.sendMessage(message,topics=["gmail"])
 
 hologram.getResultString(response_code)
-print latitude+","+longitude
+print message
 
 #Disconnect
 hologram.network.disconnect()

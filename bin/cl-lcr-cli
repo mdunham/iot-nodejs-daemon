@@ -86,6 +86,10 @@ case "$1" in
 		echo "--------------------------"
 		echo "Registration Complete"
 	;;
+	verify)
+		systemctl is-active --quiet cl-lcr-daemon || (service cl-lcr-daemon start; hologram network connect; hologram send --cloud --devicekey 'ujk{]5pX' 'down?'; hologram network disconnect)
+		python2 /root/cl-lcr-daemon/bin/gps.py
+	;;
 	unregister)
 		echo "--------------------------"
 		echo "-  CL-LCR-Daemon by HCD  -"
