@@ -22,4 +22,6 @@ echo "stty -F /dev/ttyAMA0 9600 &" >> /etc/rc.local
 echo "gpsd /dev/ttyAMA0 -F /var/run/gpsd.sock" >> /etc/rc.local
 echo "exit 0" >> /etc/rc.local
 
+./bin/cl-lcr-cli register
+
 hologram send "install:$UUID:$truckID:$_IP"
