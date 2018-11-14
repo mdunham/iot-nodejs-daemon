@@ -46,22 +46,17 @@ __Note:__ You must be logged in as root before performing the following.
 ## Register Daemon to Run on Boot
 
  * Make the CLI executable: ```chmod +x /root/cl-lcr-daemon/bin/cl-lcr-cli```
- * Run the register command: ```cd /root/cl-lcr-cli/ && ./bin/cl-lcr-cli register``
- * Start the daemon: ```/etc/init.d/cl-lcr-daemon start```
+ * Also, the Boot script: ```chmod +x /root/cl-lcr-daemon/bin/boot```
+ * Run the register command: ```/root/cl-lcr-cli/bin/cl-lcr-cli register```
+ * Start the daemon: ```service cl-lcr-daemon start```
 
 ## Development
 
-__Daemon Output:__ When running as a service output is logged to ```/var/log/daemon.log```
-__CLI Output:__ When running local using ```cl-lcr-cli start``` output is logged to: ```/root/cl-lcr-daemon/daemon-log.log```
+__Log Output:__ Main log located at ```/var/log/cl-lcr-daemon.log``` and errors are logged to ```/var/log/cl-lcr-daemon.err```
 
  * To run the daemon
-	 * As Service: ```service cl-lcr-daemon start```
-	 * Via NPM: ```npm run-script daemon start```
-	 * All output is logged to: ```/var/log/daemon.log```
+	 * ```service cl-lcr-daemon start```
  * To stop the daemon
-	 * As a service: ```service cl-lcr-daemon stop```
-	 * Via NPM: ```npm run-script daemon stop```
- * To run locally: ```npm start``` output is logged to ```/root/cl-lcr-daemon/daemon-log.log```
- * To stop locally: ```npm stop```
+	 * ```service cl-lcr-daemon stop```
 
 This application is maintained by [Matthew Dunham](http://linkedin.com/in/matthewdunham) at [Hot Coffey Design](http://hotcoffeydesign.com).

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 ####
 # Cleveland LCR Daemon - Control Script
@@ -25,6 +25,8 @@ if [[ oldUUID = "new" || oldUUID != UUID ]]; then:
 	echo $UUID > /etc/cl-lcr-uuid
 	UUID="$oldUUID->$UUID"
 fi
+
+payloadStr="$UUID:$truckID:$_IP"
 
 program_is_installed() {
 	local return_=1
@@ -74,7 +76,7 @@ case "$1" in
 		echo " - sqlite3  $(echo_if $(npm_package_is_installed sqlite3))"
 		echo "--------------------------"
 		echo -n "Starting cl-lcr-daemon - "
-		(`which node` /root/cl-lcr-daemon/index.js &>> /root/cl-lcr-daemon/daemon-log.log &)
+		service cl-lcr-daemon start
 		sleep 2
 		echo "$(echo_if $(program_is_running node))"
 		echo "--------------------------"
@@ -85,7 +87,7 @@ case "$1" in
 		echo "-  CL-LCR-Daemon by HCD  -"
 		echo "--------------------------"
 		echo -n "Stopping cl-lcr-daemon - "
-		(killall node &> /dev/null && echo "$(echo_pass)") || (echo "Not Running" && exit 0)
+		service cl-lcr-daemon stop
 	;;
 	register)
 		echo "--------------------------"
@@ -107,7 +109,7 @@ case "$1" in
 		echo "Registration Complete"
 	;;
 	verify)
-		systemctl is-active --quiet cl-lcr-daemon || (service cl-lcr-daemon start; hologram send "down:$UUID:$truckID:$_IP")
+		systemctl is-active --quiet cl-lcr-daemon || (service cl-lcr-daemon start; hologram send "was_down:$payloadStr")
 		python2 /root/cl-lcr-daemon/bin/gps.py
 	;;
 	unregister)
