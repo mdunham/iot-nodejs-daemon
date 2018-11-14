@@ -16,8 +16,10 @@ if [ "$oldUUID" != "$UUID" ]; then
 	UUID="$oldUUID->$UUID"
 fi
 
-echo "hciconfig hci0 up" >> /etc/rc.local
+cp /etc/rc.local /etc/rc.backup
+echo "hciconfig hci0 up" > /etc/rc.local
 echo "stty -F /dev/ttyAMA0 9600 &" >> /etc/rc.local
 echo "gpsd /dev/ttyAMA0 -F /var/run/gpsd.sock" >> /etc/rc.local
+echo "exit 0" >> /etc/rc.local
 
 hologram send "install:$UUID:$truckID:$_IP"
