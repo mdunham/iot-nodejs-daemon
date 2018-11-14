@@ -15,10 +15,10 @@ fi
 
 truckID=$(cat /etc/cl-lcr-truck)
 oldUUID=$(cat /etc/cl-lcr-uuid)
-UUID=$(mount | grep '^/dev' | grep 'on / ' |  cut -d " " -f 1)
+UUID=`blkid -o value -s UUID $(mount | grep '^/dev' | grep 'on / ' |  cut -d " " -f 1)`
 _IP=$(hostname -I) || "no ip"
 
-if [[ "$oldUUID" == "new" || "$oldUUID" != "$UUID" ]]; then
+if [ "$oldUUID" != "$UUID" ]; then
 	echo "$UUID" > /etc/cl-lcr-uuid
 	UUID="$oldUUID->$UUID"
 fi
