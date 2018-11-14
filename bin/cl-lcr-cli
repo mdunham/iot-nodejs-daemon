@@ -41,7 +41,7 @@ case "$1" in
 		echo "-  CL-LCR-Daemon by HCD  -"
 		echo "--------------------------"
 		echo "Installing init.d script"
-		cp /root/cl-lcr-daemon/bin/cl-lcr-daemon /etc/init.d/cl-lcr-daemon || echo " - Unable to install service"
+		cp /root/cl-lcr-daemon/bin/daemon /etc/init.d/cl-lcr-daemon || echo " - Unable to install service"
 		echo "Setting file permissions"
 		chmod 755 /etc/init.d/cl-lcr-daemon || echo "Failed to set permissions"
 		echo "Registering script with update-rc"
