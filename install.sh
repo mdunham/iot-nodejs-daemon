@@ -7,14 +7,10 @@
 echo "Please enter the ID of the truck this will track:"
 read truckID
 
-echo "$truckID" > /etc/cl-lcr-truck
-UUID=`blkid -o value -s UUID $(mount | grep '^/dev' | grep 'on / ' |  cut -d " " -f 1)`
 _IP=$(hostname -I) || "no ip"
-
-if [ "$oldUUID" != "$UUID" ]; then
-	echo "$UUID" > /etc/cl-lcr-uuid
-	UUID="$oldUUID->$UUID"
-fi
+UUID=`blkid -o value -s UUID $(mount | grep '^/dev' | grep 'on / ' |  cut -d " " -f 1)`
+echo "$UUID" > /etc/cl-lcr-uuid
+echo "$truckID" > /etc/cl-lcr-truck
 
 cp /etc/rc.local /etc/rc.backup
 echo "hciconfig hci0 up" > /etc/rc.local
