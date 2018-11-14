@@ -45,6 +45,8 @@ case "$1" in
 		chmod 755 /etc/init.d/cl-lcr-daemon || echo "Failed to set permissions"
 		echo "Registering script with update-rc"
 		update-rc.d cl-lcr-daemon defaults || echo "Failed to update rc"
+		update-rc.d cl-lcr-daemon enable > /dev/null 2>&1
+		systemctl daemon-reload
 		echo "--------------------------"
 		echo "Registration Complete"
 	;;
@@ -64,6 +66,7 @@ case "$1" in
 		update-rc.d -f cl-lcr-daemon remove || echo "Failed to remove from update-rc"
 		echo "Removing init.d script"
 		rm -f /etc/init.d/cl-lcr-daemon || echo "Unable to remove service file"
+		systemctl daemon-reload
 		echo "Unregister Complete"
 	;;
 	*)
