@@ -39,11 +39,11 @@ case "$1" in
 		echo "--------------------------"
 		echo "-  CL-LCR-Daemon by HCD  -"
 		echo "--------------------------"
-		echo -n "Installing init.d script  - "
+		echo "Installing init.d script"
 		cp /root/cl-lcr-daemon/bin/cl-lcr-daemon /etc/init.d/cl-lcr-daemon || echo " - Unable to install service"
-		echo -n "Setting file permissions  - "
+		echo "Setting file permissions"
 		chmod 755 /etc/init.d/cl-lcr-daemon || echo "Failed to set permissions"
-		echo -n "Registering script with update-rc - "
+		echo "Registering script with update-rc"
 		update-rc.d cl-lcr-daemon defaults || echo "Failed to update rc"
 		echo "--------------------------"
 		echo "Registration Complete"
@@ -56,13 +56,13 @@ case "$1" in
 		echo "--------------------------"
 		echo "-  CL-LCR-Daemon by HCD  -"
 		echo "--------------------------"
-		echo -n "Stopping the daemon - "
+		echo "Stopping the daemon"
 		killall node &> /dev/null
 		killall cl-lcr-daemon &> /dev/null
 		service cl-lcr-daemon stop
-		echo -n "Removing from update-rc.d - "
+		echo "Removing from update-rc.d"
 		update-rc.d -f cl-lcr-daemon remove || echo "Failed to remove from update-rc"
-		echo -n "Removing init.d script    - "
+		echo "Removing init.d script"
 		rm -f /etc/init.d/cl-lcr-daemon || echo "Unable to remove service file"
 		echo "Unregister Complete"
 	;;
