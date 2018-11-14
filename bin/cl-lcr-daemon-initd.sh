@@ -18,10 +18,17 @@ pid_file="/var/run/$name.pid"
 stdout_log="/var/log/$name.log"
 stderr_log="/var/log/$name.err"
 
-program_is_installed() {
-	local return_=1
-	type $1 >/dev/null 2>&1 || { local return_=0; }
-	echo "$return_"
+node_is_installed() {
+	local return_=1; 
+	type node >/dev/null 2>&1 || { local return_=0; }; 
+	echo "$return_"; 
+}
+
+install_node() {
+	nodeInstall="node-v8.9.0-linux-$(uname -m)"
+	nodeDownload="https://nodejs.org/dist/v8.9.0/$nodeInstall.tar.gz"
+	echo "Attempting auto install from $nodeDownload"
+	cd /tmp/ && wget $nodeDownload && tar -xzf $nodeInstall.tar.gz && cd $nodeInstall && cp -R * /usr/local/
 }
 
 get_pid() {
@@ -37,19 +44,16 @@ case "$1" in
     if is_running; then
         echo "Already started"
     else
-		if ! $(program_is_installed node); then
-			printf "\e[31m✘ Missing dependency: node"
+		if ! node_is_installed; then
+			printf "\e[31m✘ ${1}"
 			printf "\033\e[0m"
-			nodeInstall=node-v8.9.0-linux-$(`uname -m`)
-			nodeDownload=https://nodejs.org/dist/v8.9.0/$nodeInstall.tar.gz
-			echo "Attempting auto install from $nodeDownload"
-			cd /tmp/ && wget $nodeDownload && tar -xzf $nodeInstall.tar.gz && cd $nodeInstall && cp -R * /usr/local/
-			if ! $(program_is_installed node); then
-				printf "\e[31m✘ Unable to install node"
+			install_node
+			if ! node_is_installed; then
+				printf "\e[31m✘ ${1}"
 				printf "\033\e[0m"
-				exit(1)
+				exit 1
 			else:
-				printf "\e[32m✔ Node Successfully Installed"
+				printf "\e[32m✔ ${1}"
 				printf "\033\e[0m"
 			fi
 		fi
