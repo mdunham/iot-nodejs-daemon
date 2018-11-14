@@ -18,19 +18,6 @@ pid_file="/var/run/$name.pid"
 stdout_log="/var/log/$name.log"
 stderr_log="/var/log/$name.err"
 
-node_is_installed() {
-	local return_=1; 
-	type node >/dev/null 2>&1 || { local return_=0; }; 
-	echo "$return_"; 
-}
-
-install_node() {
-	nodeInstall="node-v8.9.0-linux-$(uname -m)"
-	nodeDownload="https://nodejs.org/dist/v8.9.0/$nodeInstall.tar.gz"
-	echo "Attempting auto install from $nodeDownload"
-	cd /tmp/ && wget $nodeDownload && tar -xzf $nodeInstall.tar.gz && cd $nodeInstall && cp -R * /usr/local/
-}
-
 get_pid() {
     cat "$pid_file"
 }
@@ -44,26 +31,15 @@ case "$1" in
     if is_running; then
         echo "Already started"
     else
-		if ! node_is_installed; then
-			printf "\e[31m✘ ${1}"
-			printf "\033\e[0m"
-			install_node
-			if ! node_is_installed; then
-				printf "\e[31m✘ ${1}"
-				printf "\033\e[0m"
-				exit 1
-			else:
-				printf "\e[32m✔ ${1}"
-				printf "\033\e[0m"
-			fi
-		fi
 		echo "Starting $name"
 		cd "$dir"
-		sudo $cmd >> "$stdout_log" 2>> "$stderr_log" &
+		$cmd >> "$stdout_log" 2>> "$stderr_log" &
 		echo $! > "$pid_file"
 		if ! is_running; then
 			echo "Unable to start, see $stdout_log and $stderr_log"
 			exit 1
+		else:
+			echo "Started successfully logging output to $stdout_log and $stderr_log"
 		fi
     fi
     ;;
