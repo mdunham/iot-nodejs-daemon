@@ -1,5 +1,4 @@
-#! /bin/sh
-# /etc/init.d/cl-lcr-daemon
+#!/bin/sh
 
 ### BEGIN INIT INFO
 # Provides:          cl-lcr-daemon
@@ -22,6 +21,7 @@ case "$1" in
     echo "Stopping cl-lcr-daemon"
     # kill application you want to stop
     (killall node &> /dev/null)
+    (/root/cl-lcr-daemon/bin/cl-lcr-cli stop > /dev/null)
     ;;
   *)
     echo "Usage: /etc/init.d/cl-lcr-daemon {start|stop}"

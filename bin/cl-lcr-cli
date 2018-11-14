@@ -59,7 +59,7 @@ case "$1" in
 		echo "$(echo_if $(program_is_running node))"
 		echo "--------------------------"
 		echo "Daemon Start Complete"
-    ;;
+        ;;
 	stop)
 		echo "--------------------------"
 		echo "-  CL-LCR-Daemon by HCD  -"
