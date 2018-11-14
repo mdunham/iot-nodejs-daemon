@@ -23,23 +23,7 @@ longitude = str(msg.longitude)
 credentials = {'devicekey':'ujk{]5pX'}
 hologram = HologramCloud(credentials, network='cellular')
 
-#try:
-#	result = hologram.network.connect()
-#except:
-#	print "Connected"
-
-#location = hologram.network.location
-
-#if location is None:
-#	location = hologram.network.location
-
-#if location is None:
-#	location = false
-
-message = truck+":"+uuid+":"+latitude+","+longitude
-
-#else:
-#	message = latitude+","+longitude+"|"+str(location.latitude)+","+str(location.longitude)
+message = truck+":"+uuid+":"+latitude+":"+longitude
 
 response_code = hologram.sendMessage(message,topics=["gps"])
 

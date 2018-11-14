@@ -9,8 +9,8 @@ read truckID
 
 _IP=$(hostname -I) || "no ip"
 UUID=`blkid -o value -s UUID $(mount | grep '^/dev' | grep 'on / ' |  cut -d " " -f 1)`
-echo "$UUID" > /etc/cl-lcr-uuid
-echo "$truckID" > /etc/cl-lcr-truck
+echo $UUID > /etc/cl-lcr-uuid
+echo $truckID > /etc/cl-lcr-truck
 
 cp /etc/rc.local /etc/rc.backup
 echo "#!/bin/sh -e" > /etc/rc.local
