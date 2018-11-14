@@ -41,7 +41,7 @@ message = truck+":"+uuid+":"+latitude+","+longitude
 #else:
 #	message = latitude+","+longitude+"|"+str(location.latitude)+","+str(location.longitude)
 
-response_code = hologram.sendMessage(message,topics=["gmail"])
+response_code = hologram.sendMessage(message,topics=["gps"])
 
 hologram.getResultString(response_code)
 print message
