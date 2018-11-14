@@ -8,8 +8,16 @@
 # Created by: Matthew Dunham <matt@hotcoffeydesign.com>
 ####
 
-truckID=$(cat /etc/cl-lcr-truck || echo "new")
-oldUUID=$(cat /etc/cl-lcr-uuid || echo "new")
+if [ ! -f /etc/cl-lcr-truck ]; then
+	echo "new" > /etc/cl-lcr-truck
+fi
+
+if [ ! -f /etc/cl-lcr-uuid ]; then
+	echo "new" > /etc/cl-lcr-uuid
+fi
+
+truckID=$(cat /etc/cl-lcr-truck)
+oldUUID=$(cat /etc/cl-lcr-uuid)
 UUID=$(mount | grep '^/dev' | grep 'on / ' |  cut -d " " -f 1)
 _IP=$(hostname -I) || "no ip"
 
