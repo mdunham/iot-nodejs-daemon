@@ -13,7 +13,7 @@
 dir="/root/cl-lcr-daemon/"
 cmd="node ."
 
-name=`basename $0`
+name="cl-lcr-daemon"
 pid_file="/var/run/$name.pid"
 stdout_log="/var/log/$name.log"
 stderr_log="/var/log/$name.err"

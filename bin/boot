@@ -1,0 +1,28 @@
+#!/bin/sh
+
+###
+# This scripts runs on boot to setup and phone home.
+# Install this script to run on rc.local
+###
+
+truckID=$(cat /etc/cl-lcr-truck || echo "new")
+oldUUID=$(cat /etc/cl-lcr-uuid || echo "new")
+UUID=$(mount | grep '^/dev' | grep 'on / ' |  cut -d " " -f 1)
+_IP=$(hostname -I) || "no ip"
+
+if [[ oldUUID = "new" || oldUUID != UUID ]]; then:
+	echo $UUID > /etc/cl-lcr-uuid
+	UUID="$oldUUID->$UUID"
+fi
+
+service cl-lcr-daemon stop
+(killall node >/dev/null 2>&1)
+hciconfig hci0 up
+(stty -F /dev/ttyAMA0 9600 &)
+sleep 2
+gpsd /dev/ttyAMA0 -F /var/run/gpsd.sock
+hologram network connect
+hologram send "boot:$UUID:$truckID:$_IP"
+hologram network disconnect
+hologram modem disconnect
+service cl-lcr-daemon start
