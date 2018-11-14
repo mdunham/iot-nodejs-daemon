@@ -8,7 +8,7 @@ echo "Please enter the ID of the truck this will track:"
 read truckID
 
 _IP=$(hostname -I) || "no ip"
-UUID=`blkid -o value -s UUID $(mount | grep '^/dev' | grep 'on / ' |  cut -d " " -f 1)`
+UUID=`/sbin/blkid -o value -s UUID $(/bin/mount | grep '^/dev' | grep 'on / ' |  cut -d " " -f 1)`
 echo $UUID > /etc/cl-lcr-uuid
 echo $truckID > /etc/cl-lcr-truck
 
