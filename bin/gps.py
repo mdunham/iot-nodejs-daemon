@@ -29,5 +29,5 @@ response_code = hologram.sendMessage(message,topics=["gps"])
 
 hologram.getResultString(response_code)
 print message
-
 hologram.network.disconnect()
+
