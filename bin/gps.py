@@ -14,8 +14,8 @@ msg = pynmea2.parse(gstr)
 truckFile = open("/etc/cl-lcr-truck", "r")
 uuidFile = open("/etc/cl-lcr-uuid", "r")
 
-truck = truckFile.readline()
-uuid = uuidFile.readline()
+truck = truckFile.readline().rstrip()
+uuid = uuidFile.readline().rstrip()
 
 latitude = str(msg.latitude)
 longitude = str(msg.longitude)
