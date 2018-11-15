@@ -53,7 +53,7 @@ case "$1" in
 	;;
 	verify)
 		systemctl is-active --quiet cl-lcr-daemon || (service cl-lcr-daemon start; hologram send "was_down:$payloadStr")
-		python2 /root/cl-lcr-daemon/bin/gps.py
+		#python2 /root/cl-lcr-daemon/bin/gps.py
 	;;
 	unregister)
 		echo "--------------------------"
