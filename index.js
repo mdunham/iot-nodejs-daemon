@@ -42,9 +42,11 @@ let
 				console.log('###### LCR CONNECTED ######');
 				for (var block = 0; block < 200; block++) {
 					for (var param = 0; param < 3; param++) {
+						if (param === 0) fieldParams[block] = {};
 						setTimeout(function(){
 							device.getFieldParams(param, block, (status, paramData) => {
-								if (status) fieldParams[block][param] = paramData
+								
+								//if (status) fieldParams[block][param] = paramData
 							});
 							if (block === 199 && param == 2) {
 								device.setField(37, 1, (status, deviceByte) => {

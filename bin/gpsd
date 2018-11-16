@@ -1,6 +1,7 @@
-exit
+#exit
 # deprecated
 
+import zlib
 import serial
 import pynmea2
 from Hologram.HologramCloud import HologramCloud
@@ -26,7 +27,7 @@ longitude = str(msg.longitude)
 credentials = {'devicekey':'ujk{]5pX'}
 hologram = HologramCloud(credentials, network='cellular')
 
-message = truck+":"+uuid+":"+latitude+":"+longitude
+message = zlib.compress(truck+":"+uuid+":"+latitude+":"+longitude)
 
 response_code = hologram.sendMessage(message,topics=["gps"])
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 # pip2 install pynmea2
 # pip2 install geopy
