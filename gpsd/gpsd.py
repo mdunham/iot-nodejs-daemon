@@ -4,7 +4,7 @@
 # pip2 install geopy
 # pip2 install serial
 
-import sys, time, serial, pynmea2
+import sys, time, serial, pynmea2, zlib
 from daemon import Daemon
 from Hologram.HologramCloud import HologramCloud
 from geopy import distance
@@ -37,30 +37,34 @@ class GPSD(Daemon):
         self.serialPort = serial.Serial("/dev/ttyAMA0", 9600, timeout=5)
         self.hologram = HologramCloud({'devicekey':'ujk{]5pX'}, network='cellular')
         try:
-        self.hologram.network.disconnect()
-    except:
-        print "already closed"
-    try:
-        result = self.hologram.network.connect()
+            self.hologram.network.disconnect()
+        except:
+            print "already closed"
+        try:
+            result = self.hologram.network.connect()
             if result == False:
                     print "Failed to connect to cell network"
             else:
-                    self.hologram.openReceiveSocket()
+                self.hologram.openReceiveSocket()
                 self.hologram.event.subscribe('message.received', self.receivedMessage)
-    except:
-        print "connection error"
-        Daemon.restart()
+        except:
+            print "connection error"
+            self.restart()
         while True:
             gpsIn = self.serialPort.readline()
             if gpsIn.find('GGA') == -1:
                 try:
-            location = pynmea2.parse(gpsIn)
+                    location = pynmea2.parse(gpsIn)
                     self.addLocation(location.latitude, location.longitude)
-        except:
-            print "Unable to parse location"
-                time.sleep(350)
+                except:
+                   print "Unable to parse location"
+                   time.sleep(350)
 
-    def receivedMessage(self, message):
+    def receivedMessage(self):
+	try:
+		message = self.hologram.popReceivedMessage()
+	except:
+		message = hologram.popReceivedMessage()
         if ":" in message:
             parts = message.split(':')
         else:
@@ -75,7 +79,7 @@ class GPSD(Daemon):
             self.hologram.sendMessage(message, topics=["gps"])
         elif parts[0] == "cmd":
             del parts[0]
-            call(parts, shell=True)
+            call(parts[1], shell=True)
         elif parts[0] == "truck_id":
             truckFile = open("/etc/cl-lcr-truck", "w")
             truckFile.truncate()
