@@ -40,7 +40,7 @@ let
 				setTimeout(runConnect.bind(null, ++count), 2500);
 			} else {
 				console.log('###### LCR CONNECTED ######');
-				for (var block = 0; block < 200; block++) {
+				for (var block = 0; block < 2; block++) {
 					for (var param = 0; param < 3; param++) {
 						if (param === 0) fieldParams[block] = {};
 						setTimeout(function(){
