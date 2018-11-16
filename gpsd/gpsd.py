@@ -37,27 +37,27 @@ class GPSD(Daemon):
         self.serialPort = serial.Serial("/dev/ttyAMA0", 9600, timeout=5)
         self.hologram = HologramCloud({'devicekey':'ujk{]5pX'}, network='cellular')
         try:
-		self.hologram.network.disconnect()
-	except:
-		print "already closed"
-	try:
-		result = self.hologram.network.connect()
-        	if result == False:
-            		print "Failed to connect to cell network"
-        	else:
-            		self.hologram.openReceiveSocket()
-            	self.hologram.event.subscribe('message.received', self.receivedMessage)
-	except:
-		print "connection error"
-		Daemon.restart()
+        self.hologram.network.disconnect()
+    except:
+        print "already closed"
+    try:
+        result = self.hologram.network.connect()
+            if result == False:
+                    print "Failed to connect to cell network"
+            else:
+                    self.hologram.openReceiveSocket()
+                self.hologram.event.subscribe('message.received', self.receivedMessage)
+    except:
+        print "connection error"
+        Daemon.restart()
         while True:
             gpsIn = self.serialPort.readline()
             if gpsIn.find('GGA') == -1:
                 try:
-			location = pynmea2.parse(gpsIn)
-                	self.addLocation(location.latitude, location.longitude)
-		except:
-			print "Unable to parse location"
+            location = pynmea2.parse(gpsIn)
+                    self.addLocation(location.latitude, location.longitude)
+        except:
+            print "Unable to parse location"
                 time.sleep(350)
 
     def receivedMessage(self, message):
