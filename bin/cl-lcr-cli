@@ -27,7 +27,7 @@ if [ "$oldUUID" != "$UUID" ]; then
 	UUID="$oldUUID->$UUID"
 fi
 
-payloadStr="$UUID:$truckID:$_IP"
+payloadStr="$UUID:$truckID"
 
 case "$1" in
 	start)
@@ -60,8 +60,6 @@ case "$1" in
 		echo "-  CL-LCR-Daemon by HCD  -"
 		echo "--------------------------"
 		echo "Stopping the daemon"
-		killall node &> /dev/null
-		killall cl-lcr-daemon &> /dev/null
 		service cl-lcr-daemon stop
 		echo "Removing from update-rc.d"
 		update-rc.d -f cl-lcr-daemon remove || echo "Failed to remove from update-rc"

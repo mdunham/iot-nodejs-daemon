@@ -1,3 +1,6 @@
+exit
+# deprecated
+
 import serial
 import pynmea2
 from Hologram.HologramCloud import HologramCloud

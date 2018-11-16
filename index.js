@@ -21,6 +21,8 @@ let
 		}
 		console.log('Connected to the SQLite database.');
 	}),
+			
+	fieldParams = {},
 		
 	// LCR Device API
 	device = new lcr.device('ttyUSB0', 250, 255),
@@ -38,6 +40,21 @@ let
 				setTimeout(runConnect.bind(null, ++count), 2500);
 			} else {
 				console.log('###### LCR CONNECTED ######');
+				for (var block = 0; block < 200; block++) {
+					for (var param = 0; param < 3; param++) {
+						setTimeout(function(){
+							device.getFieldParams(param, block, (status, paramData) => {
+								if (status) fieldParams[block][param] = paramData
+							});
+							if (block === 199 && param == 2) {
+								device.setField(37, 1, (status, deviceByte) => {
+									device.removeTransaction((rc) => console.log('inir lcr', status, rc, deviceByte));
+								});
+							}
+						}, 150 * (block + param));
+					}
+				}
+				
 			}
 		});
 	};

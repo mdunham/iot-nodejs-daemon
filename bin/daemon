@@ -36,7 +36,7 @@ if [ "$oldUUID" != "$UUID" ]; then
 	UUID="$oldUUID->$UUID"
 fi
 
-payloadStr="$UUID:$truckID:$_IP"
+payloadStr="$UUID:$truckID"
 
 get_pid() {
 	cat "$pid_file"
@@ -55,13 +55,14 @@ case "$1" in
 			hciconfig hci0 up
 			cd "$dir"
 			(sleep 3; $cmd >> "$stdout_log" 2>> "$stderr_log") &
+			(./gpsd/gps start >> "$stdout_log" 2>> "$stderr_log") &
 			echo $! > "$pid_file"
 			if ! is_running; then
 				echo "Unable to start, see $stdout_log and $stderr_log"
-				hologram send "startup_fail:$UUID:$truckID:$_IP"
+				hologram send "startup_fail:$UUID:$truckID"
 				exit 1
 			else:
-				hologram send "startup:$UUID:$truckID:$_IP"
+				hologram send "startup:$UUID:$truckID"
 				echo "Started successfully logging output to $stdout_log and $stderr_log"
 			fi
 		fi
@@ -79,8 +80,8 @@ case "$1" in
 				echo -n "."
 				sleep 1
 			done
-			echo
-
+			(./gpsd/gps stop >> "$stdout_log" 2>> "$stderr_log") &
+			(killall node > /dev/null 2>&1)
 			if is_running; then
 				echo "Not stopped; may still be shutting down or shutdown may have failed"
 				hologram send "stop_fail:$payloadStr"
