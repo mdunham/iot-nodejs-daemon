@@ -25,14 +25,6 @@ class GPSD(Daemon):
         self.uuid = uuidFile.readline().rstrip()
         uuidFile.close()
         truckFile.close()
-        self.serialPort = serial.Serial("/dev/ttyAMA0", 9600, timeout=5)
-        self.hologram = HologramCloud({'devicekey':'ujk{]5pX'}, network='cellular')
-        result = self.hologram.network.connect()
-        if result == False:
-            print "Failed to connect to cell network"
-        else:
-            self.hologram.openReceiveSocket()
-            self.hologram.event.subscribe('message.received', self.receivedMessage)
 
     def addLocation(self, lat, lon):
         moved = distance.distance(self.location, (lat, lon)).km
@@ -42,14 +34,33 @@ class GPSD(Daemon):
             self.hologram.sendMessage(message, topics=["gps"])
 
     def run(self):
+        self.serialPort = serial.Serial("/dev/ttyAMA0", 9600, timeout=5)
+        self.hologram = HologramCloud({'devicekey':'ujk{]5pX'}, network='cellular')
+        try:
+		self.hologram.network.disconnect()
+	except:
+		print "already closed"
+	try:
+		result = self.hologram.network.connect()
+        	if result == False:
+            		print "Failed to connect to cell network"
+        	else:
+            		self.hologram.openReceiveSocket()
+            	self.hologram.event.subscribe('message.received', self.receivedMessage)
+	except:
+		print "connection error"
+		Daemon.restart()
         while True:
             gpsIn = self.serialPort.readline()
             if gpsIn.find('GGA') == -1:
-                location = pynmea2.parse(gpsIn)
-                self.addLocation(self, location.latitude, location.longitude)
+                try:
+			location = pynmea2.parse(gpsIn)
+                	self.addLocation(location.latitude, location.longitude)
+		except:
+			print "Unable to parse location"
                 time.sleep(350)
 
-    def receivedMessage(message):
+    def receivedMessage(self, message):
         if ":" in message:
             parts = message.split(':')
         else:
@@ -72,7 +83,7 @@ class GPSD(Daemon):
             truckFile.close()
 
 if __name__ == "__main__":
-    daemon = GPSD('/tmp/daemon-py-gpsd.pid')
+    daemon = GPSD('/tmp/daemon-py-gpsd.pid', '/dev/null', '/var/log/gpsd.log', '/var/log/gpsd.err')
     if len(sys.argv) == 2:
         if 'start' == sys.argv[1]:
             daemon.start()
