@@ -53,7 +53,6 @@ case "$1" in
 		else
 			echo "Starting $name"
 			hciconfig hci0 up
-			(stty -F /dev/ttyAMA0 9600 &)
 			cd "$dir"
 			(sleep 3; $cmd >> "$stdout_log" 2>> "$stderr_log") &
 			echo $! > "$pid_file"
