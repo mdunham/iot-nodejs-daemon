@@ -11,7 +11,6 @@
 
 dir="/root/cl-lcr-daemon/"
 cmd="node ."
-
 name="cl-lcr-daemon"
 pid_file="/var/run/$name.pid"
 stdout_log="/var/log/$name.log"
@@ -59,10 +58,10 @@ case "$1" in
 			echo $! > "$pid_file"
 			if ! is_running; then
 				echo "Unable to start, see $stdout_log and $stderr_log"
-				hologram send "startup_fail:$UUID:$truckID"
+				#hologram send "startup_fail:$UUID:$truckID"
 				exit 1
 			else:
-				hologram send "startup:$UUID:$truckID"
+				#hologram send "startup:$UUID:$truckID"
 				echo "Started successfully logging output to $stdout_log and $stderr_log"
 			fi
 		fi
@@ -84,14 +83,14 @@ case "$1" in
 			(killall node > /dev/null 2>&1)
 			if is_running; then
 				echo "Not stopped; may still be shutting down or shutdown may have failed"
-				hologram send "stop_fail:$payloadStr"
+				#hologram send "stop_fail:$payloadStr"
 				exit 1
 			else
 				echo "Stopped"
 				if [ -f "$pid_file" ]; then
 					rm "$pid_file"
 				fi
-				hologram send "stopped:$payloadStr"
+				#hologram send "stopped:$payloadStr"
 			fi
 		else
 			echo "Not running"
@@ -102,7 +101,7 @@ case "$1" in
 		sleep 1
 		if is_running; then
 			echo "Unable to stop, will not attempt to start"
-			hologram send "stop_fail:$payloadStr"
+			#hologram send "stop_fail:$payloadStr"
 			exit 1
 		fi
 		$0 start

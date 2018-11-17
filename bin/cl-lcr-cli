@@ -52,8 +52,15 @@ case "$1" in
 		echo "Registration Complete"
 	;;
 	verify)
-		systemctl is-active --quiet cl-lcr-daemon || (service cl-lcr-daemon start; hologram send "was_down:$payloadStr")
-		python2 /root/cl-lcr-daemon/bin/gpsd
+		systemctl is-active --quiet cl-lcr-daemon || (service cl-lcr-daemon start; print "service was down!")
+		pid=""
+		if [ -f "/tmp/daemon-py-gpsd.pid" ]; then
+			pid=`cat /tmp/daemon-py-gpsd.pid 2>/dev/null`
+		fi
+		if [ "$pid" == "" ]; then
+			hologram modem disconnect
+			./root/cl-lcr-daemon/gpsd/gpsd.py start
+		fi
 	;;
 	unregister)
 		echo "--------------------------"

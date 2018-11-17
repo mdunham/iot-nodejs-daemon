@@ -61,10 +61,10 @@ class GPSD(Daemon):
                    time.sleep(350)
 
     def receivedMessage(self):
-	try:
-		message = self.hologram.popReceivedMessage()
-	except:
-		message = hologram.popReceivedMessage()
+    try:
+        message = self.hologram.popReceivedMessage()
+    except:
+        message = hologram.popReceivedMessage()
         if ":" in message:
             parts = message.split(':')
         else:
