@@ -60,7 +60,7 @@ class GPSD(Daemon):
             gpsIn = ""
             time.sleep(1)
 
-    def tail(f, n, offset=0):
+    def tail(self, f, n, offset=0):
         data = ""
         try:
             with open(f, 'r') as myfile:
