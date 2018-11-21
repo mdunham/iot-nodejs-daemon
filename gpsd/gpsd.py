@@ -28,22 +28,26 @@ class GPSD(Daemon):
 
     def addLocation(self, lat, lon):
         moved = distance.distance(self.location, (lat, lon)).km
+        elapsed_time = time.time() - self.start_time
         if moved > 0.75:
             self.location = (lat, lon)
-            message = zlib.compress(self.truck+":"+self.uuid+":"+str(lat)+":"+str(lon))
-            self.hologram.sendMessage(message, topics=["gps"])
+            if elapsed_time > 300:
+                self.start_time = time.time()
+                message = zlib.compress(self.truck+":"+str(lat)+":"+str(lon))
+                self.hologram.sendMessage(message, topics=["gps"])
 
     def run(self):
         self.serialPort = serial.Serial("/dev/ttyAMA0", 9600, timeout=5)
+        self.start_time = 0
         self.hologram = HologramCloud({'devicekey':'ujk{]5pX'}, network='cellular')
         try:
             self.hologram.network.disconnect()
         except:
-            print "already closed"
+            pass
         try:
             result = self.hologram.network.connect()
             if result == False:
-                    print "Failed to connect to cell network"
+                print "Failed to connect to cell network"
             else:
                 self.hologram.openReceiveSocket()
                 self.hologram.event.subscribe('message.received', self.receivedMessage)
@@ -55,10 +59,10 @@ class GPSD(Daemon):
             if gpsIn.find('GGA') == -1:
                 try:
                     location = pynmea2.parse(gpsIn)
-                    self.addLocation(location.latitude, location.longitude)
+                    self.addLocation(self, location.latitude, location.longitude)
                 except:
-                   print "Unable to parse location"
-                   time.sleep(350)
+                   pass
+                time.sleep(1)
 
     def tail(f, n, offset=0):
         stdin,stdout = os.popen2("tail -n "+n+offset+" "+f)
@@ -67,10 +71,10 @@ class GPSD(Daemon):
         return lines[:,-offset]
 
     def receivedMessage(self):
-    try:
-        message = self.hologram.popReceivedMessage()
-    except:
-        message = hologram.popReceivedMessage()
+        try:
+            message = self.hologram.popReceivedMessage()
+        except:
+            message = hologram.popReceivedMessage()
         if ":" in message:
             parts = message.split(':')
         else:
@@ -81,17 +85,17 @@ class GPSD(Daemon):
                 print "Invalid message received"
                 return False
         if parts[0] == "gps":
-            message = zlib.compress(self.truck+":"+self.uuid+":"+str(self.location[0])+":"+str(self.location[1]))
+            message = zlib.compress(self.truck+":"+str(self.location[0])+":"+str(self.location[1]))
             self.hologram.sendMessage(message, topics=["gps"])
         elif parts[0] == "cmd":
             del parts[0]
             try:
                 call(parts[1], shell=True)
-            except OSError:
+            except:
                 pass
         elif parts[0] == "tail":
             del parts[0]
-			message = self.tail(parts[2], parts[1])
+            message = self.tail(parts[2], parts[1])
             self.hologram.sendMessage(zlib.compress(message), topics=["tail"])
         elif parts[0] == "truck_id":
             truckFile = open("/etc/cl-lcr-truck", "w")
