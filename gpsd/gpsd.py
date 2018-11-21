@@ -98,7 +98,7 @@ class GPSD(Daemon):
                 sys.stderr.write("Failed CMD"+str(parts[1])+"\n")
         elif parts[0] == "tail":
             message = self.tail(parts[2], parts[1])
-            self.hologram.sendMessage(zlib.compress(message), topics=["tail"])
+            self.hologram.sendMessage(zlib.compress("tail:"+parts[2]+":"+message), topics=["tail"])
         elif parts[0] == "truck_id":
             truckFile = open("/etc/cl-lcr-truck", "w")
             truckFile.truncate()
