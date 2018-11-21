@@ -88,13 +88,13 @@ class GPSD(Daemon):
             message = zlib.compress(self.truck+":"+str(self.location[0])+":"+str(self.location[1]))
             self.hologram.sendMessage(message, topics=["gps"])
         elif parts[0] == "cmd":
-            del parts[0]
             try:
+                print "Running CMD: "+parts[1]
                 call(parts[1], shell=True)
             except:
                 pass
+                print "Failed CMD"
         elif parts[0] == "tail":
-            del parts[0]
             message = self.tail(parts[2], parts[1])
             self.hologram.sendMessage(zlib.compress(message), topics=["tail"])
         elif parts[0] == "truck_id":

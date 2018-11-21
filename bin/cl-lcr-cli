@@ -54,10 +54,10 @@ case "$1" in
 		if [ -f "/tmp/daemon-py-gpsd.pid" ]; then
 			pid=$(cat /tmp/daemon-py-gpsd.pid 2>/dev/null)
 		fi
-		if [ "$pid" != "" ]; then
+		if [ ! -z "$pid" ]; then
 			kill -0 $pid > /dev/null 2>&1 || (pid=""; echo "GPSD PID Detected but signal failed.")
 		fi
-		if ["$pid" == ""]; then
+		if [ -z "$pid" ]; then
 			(hologram modem disconnect > /dev/null 2>&1)
 			(hologram network disconnect > /dev/null 2>&1)
 			(/root/cl-lcr-daemon/gpsd/gpsd.py start >> /var/log/cl-lcr-daemon.log) &
