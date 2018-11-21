@@ -18,16 +18,13 @@ fi
 
 truckID=$(cat /etc/cl-lcr-truck)
 oldUUID=$(cat /etc/cl-lcr-uuid)
-UUID=`/sbin/blkid -o value -s UUID $(/bin/mount | grep '^/dev' | grep 'on / ' |  cut -d " " -f 1)`
+UUID=$(/sbin/blkid -o value -s UUID "$(/bin/mount | grep '^/dev' | grep 'on / ' |  cut -d \" \" -f 1)")
 echo $UUID > /etc/cl-lcr-uuid
-_IP=$(hostname -I) || "no ip"
 
 if [ "$oldUUID" != "$UUID" ]; then
 	echo "$UUID" > /etc/cl-lcr-uuid
 	UUID="$oldUUID->$UUID"
 fi
-
-payloadStr="$UUID:$truckID"
 
 case "$1" in
 	start)
@@ -55,11 +52,15 @@ case "$1" in
 		systemctl is-active --quiet cl-lcr-daemon || (service cl-lcr-daemon start; print "service was down!")
 		pid=""
 		if [ -f "/tmp/daemon-py-gpsd.pid" ]; then
-			pid=`cat /tmp/daemon-py-gpsd.pid 2>/dev/null`
+			pid=$(cat /tmp/daemon-py-gpsd.pid 2>/dev/null)
 		fi
-		if [ "$pid" == "" ]; then
-			hologram modem disconnect
-			./root/cl-lcr-daemon/gpsd/gpsd.py start
+		if "$pid" != "" && ! kill -0 $pid > /dev/null 2>&1; then
+			pid=""
+			echo "GPSD PID Detected but signal failed."
+		fi
+		if "$pid" == "" ; then
+			hologram modem disconnect > /dev/null 2>&1
+			(./root/cl-lcr-daemon/gpsd/gpsd.py start >> /var/log/cl-lcr-daemon.log) &
 		fi
 	;;
 	unregister)

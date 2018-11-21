@@ -34,8 +34,8 @@ echo "Backing up rc.local..."
 cp /etc/rc.local /etc/rc.backup
 echo "#!/bin/sh -e" > /etc/rc.local
 echo "hciconfig hci0 up" >> /etc/rc.local
-echo "stty -F /dev/ttyAMA0 9600" >> /etc/rc.local
-echo "gpsd /dev/ttyAMA0 -F /var/run/gpsd.sock" >> /etc/rc.local
+echo "(stty -F /dev/ttyAMA0 9600) &" >> /etc/rc.local
+echo "sleep 1; gpsd /dev/ttyAMA0 -F /var/run/gpsd.sock" >> /etc/rc.local
 echo "/usr/bin/tvservice -o" >> /etc/rc.local
 echo "exit 0" >> /etc/rc.local
 echo "New rc.local created"
