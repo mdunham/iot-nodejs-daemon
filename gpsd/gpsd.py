@@ -33,7 +33,7 @@ class GPSD(Daemon):
             if moved > 0.75:
                 self.location = (lat, lon)
                 self.start_time = time.time()
-                message = zlib.compress(self.truck+":"+str(lat)+":"+str(lon))
+                message = zlib.compress(self.truck+":"+str(lat)+":"+str(lon), 9)
                 self.hologram.sendMessage(message, topics=["gps"])
 
     def run(self):
@@ -64,7 +64,7 @@ class GPSD(Daemon):
         data = ""
         try:
             with open(f, 'r') as myfile:
-                data=myfile.read().replace("\n", ' || ')
+                data=myfile.read()
                 myfile.close()
             if data != "":
                 n = int(n) * -1
@@ -88,7 +88,7 @@ class GPSD(Daemon):
                 sys.stderr.write("Invalid message\n")
                 return false
         if parts[0] == "gps":
-            message = zlib.compress(self.truck+":"+str(self.location[0])+":"+str(self.location[1]))
+            message = zlib.compress(self.truck+":"+str(self.location[0])+":"+str(self.location[1]), 9)
             self.hologram.sendMessage(message, topics=["gps"])
         elif parts[0] == "cmd":
             try:
@@ -98,7 +98,7 @@ class GPSD(Daemon):
                 sys.stderr.write("Failed CMD"+str(parts[1])+"\n")
         elif parts[0] == "tail":
             message = self.tail(parts[2], parts[1])
-            message = "tail:"+parts[2]+":"+str(message).rstrip()
+            message = "tail:"+parts[2]+":"+str(message)
             self.hologram.sendMessage(message, topics=["tail"])
         elif parts[0] == "truck_id":
             truckFile = open("/etc/cl-lcr-truck", "w")
