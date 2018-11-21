@@ -68,7 +68,7 @@ class GPSD(Daemon):
                 myfile.close()
             if data != "":
                 n = int(n) * -1
-                data = data[n:]
+                data = data[-100:]
         except:
             data = "error"
         return data
