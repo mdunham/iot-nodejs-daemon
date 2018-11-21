@@ -29,9 +29,9 @@ class GPSD(Daemon):
     def addLocation(self, lat, lon):
         moved = distance.distance(self.location, (lat, lon)).km
         elapsed_time = time.time() - self.start_time
-        if moved > 0.75:
-            self.location = (lat, lon)
-            if elapsed_time > 300:
+        if elapsed_time > 200:
+            if moved > 0.75:
+                self.location = (lat, lon)
                 self.start_time = time.time()
                 message = zlib.compress(self.truck+":"+str(lat)+":"+str(lon))
                 self.hologram.sendMessage(message, topics=["gps"])
@@ -40,29 +40,25 @@ class GPSD(Daemon):
         self.serialPort = serial.Serial("/dev/ttyAMA0", 9600, timeout=5)
         self.start_time = 0
         self.hologram = HologramCloud({'devicekey':'ujk{]5pX'}, network='cellular')
-        try:
+        if self.hologram.network.getConnectionStatus() != 1:
             self.hologram.network.disconnect()
-        except:
-            pass
         try:
             result = self.hologram.network.connect()
             if result == False:
-                print "Failed to connect to cell network"
+                sys.stderr.write("Failed to connect to cell network\n")
             else:
                 self.hologram.openReceiveSocket()
                 self.hologram.event.subscribe('message.received', self.receivedMessage)
         except:
-            print "connection error"
-            self.restart()
+            sys.stderr.write("connection error\n")
+        gpsIn = ""
         while True:
-            gpsIn = self.serialPort.readline()
-            if gpsIn.find('GGA') == -1:
-                try:
-                    location = pynmea2.parse(gpsIn)
-                    self.addLocation(self, location.latitude, location.longitude)
-                except:
-                   pass
-                time.sleep(1)
+            while gpsIn.find('GGA') == -1:
+                gpsIn = self.serialPort.readline()            
+            location = pynmea2.parse(gpsIn)
+            self.addLocation(location.latitude, location.longitude)
+            gpsIn = ""
+            time.sleep(1)
 
     def tail(f, n, offset=0):
         stdin,stdout = os.popen2("tail -n "+n+offset+" "+f)
@@ -82,18 +78,17 @@ class GPSD(Daemon):
             if ":" in message:
                 parts = message.split(':')
             else:
-                print "Invalid message received"
-                return False
+                sys.stderr.write("Invalid message\n")
+                return false
         if parts[0] == "gps":
             message = zlib.compress(self.truck+":"+str(self.location[0])+":"+str(self.location[1]))
             self.hologram.sendMessage(message, topics=["gps"])
         elif parts[0] == "cmd":
             try:
-                print "Running CMD: "+parts[1]
+                sys.stderr.write("Running CMD: "+str(parts[1])+"\n")
                 call(parts[1], shell=True)
             except:
-                pass
-                print "Failed CMD"
+                sys.stderr.write("Failed CMD"+str(parts[1])+"\n")
         elif parts[0] == "tail":
             message = self.tail(parts[2], parts[1])
             self.hologram.sendMessage(zlib.compress(message), topics=["tail"])
