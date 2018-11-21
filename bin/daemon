@@ -51,23 +51,24 @@ case "$1" in
 			echo "Already started"
 		else
 			echo "Starting $name"
-			(killall pythyon2 >/dev/null 2>&1) &
-			(killall python >/dev/null 2>&1) &
-			(killall gpsd >/dev/null 2>&1) &
-			(killall node >/dev/null 2>&1) &
-			sleep 3;
+			(killall pythyon2 >/dev/null 2>&1)
+			(killall python >/dev/null 2>&1) 
+			(killall gpsd.py >/dev/null 2>&1)
+			(killall node >/dev/null 2>&1) 
+			(hologram modem disconnect >/dev/null 2>&1) 
 			(hciconfig hci0 up >/dev/null 2>&1) &
 			(stty -F /dev/ttyAMA0 9600 >/dev/null 2>&1) &
-			(gpsd /dev/ttyAMA0 -F /var/run/gpsd.sock >/dev/null 2>&1) &
+			(sleep 2; gpsd /dev/ttyAMA0 -F /var/run/gpsd.sock >/dev/null 2>&1) &
 			cd "$dir"
-			(sleep 3; $cmd >> "$stdout_log" 2>> "$stderr_log") &
-			(./gpsd/gps start >> "$stdout_log" 2>> "$stderr_log") &
+			sleep 3;
+			($cmd >> "$stdout_log" 2>> "$stderr_log") &
 			echo $! > "$pid_file"
 			if ! is_running; then
 				echo "Unable to start, see $stdout_log and $stderr_log"
 				exit 1
 			else:
 				echo "Started successfully logging output to $stdout_log and $stderr_log"
+				(sleep 3; ./gpsd/gpsd.py start >> "$stdout_log" 2>> "$stderr_log") &
 			fi
 		fi
 		;;
@@ -84,22 +85,21 @@ case "$1" in
 				echo -n "."
 				sleep 1
 			done
-			(./gpsd/gps stop >> "$stdout_log" 2>> "$stderr_log") &
-			sleep 3;
-			(killall pythyon2 >/dev/null 2>&1) &
-			(killall python >/dev/null 2>&1) &
-			(killall gpsd >/dev/null 2>&1) &
-			(killall node >/dev/null 2>&1) &
+			(/root/cl-lcr-daemon/gpsd/gpsd.py stop >> "$stdout_log" 2>> "$stderr_log") &
+			(hologram modem disconnect >/dev/null 2>&1)
+			(killall pythyon2 >/dev/null 2>&1) 
+			(killall python >/dev/null 2>&1) 
+			(killall gpsd.py >/dev/null 2>&1) 
+			(killall node >/dev/null 2>&1) 
 			if is_running; then
 				echo "Not stopped; may still be shutting down or shutdown may have failed"
-				#hologram send "stop_fail:$payloadStr"
+				/root/cl-lcr-daemon/bin/cl-lcr-cli stop >/dev/null 2>&1
 				exit 1
 			else
 				echo "Stopped"
 				if [ -f "$pid_file" ]; then
 					rm "$pid_file"
 				fi
-				#hologram send "stopped:$payloadStr"
 			fi
 		else
 			echo "Not running"
@@ -110,7 +110,6 @@ case "$1" in
 		sleep 1
 		if is_running; then
 			echo "Unable to stop, will not attempt to start"
-			#hologram send "stop_fail:$payloadStr"
 			exit 1
 		fi
 		$0 start

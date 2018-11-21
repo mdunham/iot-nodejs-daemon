@@ -17,7 +17,7 @@ confirm() {
 # This scripts installs cl-lcr-daemon
 ###
 
-confirm "Would you like to install the Cleveland LCR Daemon? [Y/n]") || exit 0
+confirm "Would you like to install the Cleveland LCR Daemon? [Y/n]" || exit 0
 
 echo "Please enter the ID of the truck this will track:"
 read truckID
@@ -46,6 +46,10 @@ echo "dtparam=act_led_activelow=on" >> /boot/config.txt
 echo "dtoverlay=pi3-miniuart-bt" >> /boot/config.txt
 echo "enable_uart=1" >> /boot/config.txt
 echo "force_turbo=1" >> /boot/config.txt
+
+chmod +x /root/cl-lcr-daemon/bin/*
+chmod +x /root/cl-lcr-daemon/gpsd/*
+chmod +x /etc/rc.local
 
 echo "Running npm install..."
 cd /root/cl-lcr-daemon/ && npm install --unsafe-perms --force
