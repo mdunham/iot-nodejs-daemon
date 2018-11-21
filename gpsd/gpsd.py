@@ -61,10 +61,17 @@ class GPSD(Daemon):
             time.sleep(1)
 
     def tail(f, n, offset=0):
-        stdin,stdout = os.popen2("tail -n "+n+offset+" "+f)
-        stdin.close()
-        lines = stdout.readlines(); stdout.close()
-        return lines[:,-offset]
+        data = ""
+        try:
+            with open(f, 'r') as myfile:
+                data=myfile.read().replace("\n", ' || ')
+                myfile.close()
+            if data != "":
+                n = int(n) * -1
+                data = data[n:]
+        except:
+            data = "error"
+        return data
 
     def receivedMessage(self):
         try:
