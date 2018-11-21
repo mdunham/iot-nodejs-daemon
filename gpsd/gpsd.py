@@ -4,7 +4,7 @@
 # pip2 install geopy
 # pip2 install serial
 
-import sys, time, serial, pynmea2, zlib
+import os, sys, time, serial, pynmea2, zlib
 from daemon import Daemon
 from Hologram.HologramCloud import HologramCloud
 from geopy import distance
@@ -60,6 +60,12 @@ class GPSD(Daemon):
                    print "Unable to parse location"
                    time.sleep(350)
 
+    def tail(f, n, offset=0):
+        stdin,stdout = os.popen2("tail -n "+n+offset+" "+f)
+        stdin.close()
+        lines = stdout.readlines(); stdout.close()
+        return lines[:,-offset]
+
     def receivedMessage(self):
     try:
         message = self.hologram.popReceivedMessage()
@@ -79,7 +85,14 @@ class GPSD(Daemon):
             self.hologram.sendMessage(message, topics=["gps"])
         elif parts[0] == "cmd":
             del parts[0]
-            call(parts[1], shell=True)
+            try:
+                call(parts[1], shell=True)
+            except OSError:
+                pass
+        elif parts[0] == "tail":
+            del parts[0]
+			message = self.tail(parts[2], parts[1])
+            self.hologram.sendMessage(zlib.compress(message), topics=["tail"])
         elif parts[0] == "truck_id":
             truckFile = open("/etc/cl-lcr-truck", "w")
             truckFile.truncate()
