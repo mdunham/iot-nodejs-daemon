@@ -6,7 +6,6 @@
 
 import os, sys, time, serial, pynmea2, zlib
 from daemon import Daemon
-from compress import LZString
 from Hologram.HologramCloud import HologramCloud
 from geopy import distance
 from subprocess import call
@@ -34,7 +33,7 @@ class GPSD(Daemon):
             if moved > 0.75:
                 self.location = (lat, lon)
                 self.start_time = time.time()
-                message = LZString.compress(self.truck+":"+str(lat)+":"+str(lon))
+                message = zlib.compress(str(lat)+":"+str(lon), 8)
                 self.hologram.sendMessage(message, topics=["gps"])
 
     def run(self):
@@ -93,13 +92,10 @@ class GPSD(Daemon):
                 sys.stderr.write("Invalid message\n")
                 return false
         if parts[0] == "gps":
-            message = LZString.compress(self.truck+":"+str(self.location[0])+":"+str(self.location[1]))
+            message = zlib.compress(str(self.location[0])+":"+str(self.location[1]), 8)
             self.hologram.sendMessage(message, topics=["gps"])
         elif parts[0] == "gpsd":
-            message = self.truck+":"+str(self.location[0])+":"+str(self.location[1])
-            self.hologram.sendMessage(message, topics=["gps"])
-        elif parts[0] == "gpsl":
-            message = LZString.compress(self.truck+":"+str(self.location[0])+":"+str(self.location[1]))
+            message = str(self.location[0])+":"+str(self.location[1])
             self.hologram.sendMessage(message, topics=["gps"])
         elif parts[0] == "cmd":
             try:
@@ -111,11 +107,18 @@ class GPSD(Daemon):
             message = self.tail(parts[2], parts[1])
             message = "tail:"+parts[2]+":"+str(message)
             self.hologram.sendMessage(message, topics=["tail"])
-        elif parts[0] == "truck_id":
-            truckFile = open("/etc/cl-lcr-truck", "w")
-            truckFile.truncate()
-            truckFile.write(parts[1])
-            truckFile.close()
+        elif parts[0] == "truck":
+            if parts[1] == "get":
+                truckFile = open("/etc/cl-lcr-truck", "r")
+                self.truck = truckFile.readline().rstrip()
+                truckFile.close()
+            elif parts[1] == "set":
+                truckFile = open("/etc/cl-lcr-truck", "w")
+                truckFile.truncate()
+                truckFile.write(parts[2])
+                truckFile.close()
+                self.truck = parts[2]
+            self.hologram.sendMessage(zlib.compress("truck:"+self.truck, 8), topics=["tail"])
 
 if __name__ == "__main__":
     daemon = GPSD('/tmp/daemon-py-gpsd.pid', '/dev/null', '/var/log/gpsd.log', '/var/log/gpsd.err')
