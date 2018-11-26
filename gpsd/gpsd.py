@@ -10,6 +10,34 @@ from Hologram.HologramCloud import HologramCloud
 from geopy import distance
 from subprocess import call
 
+
+def compress(uncompressed):
+    """Compress a string to a list of output symbols."""
+ 
+    # Build the dictionary.
+    dict_size = 256
+    dictionary = dict((chr(i), i) for i in xrange(dict_size))
+    # in Python 3: dictionary = {chr(i): i for i in range(dict_size)}
+ 
+    w = ""
+    result = []
+    for c in uncompressed:
+        wc = w + c
+        if wc in dictionary:
+            w = wc
+        else:
+            result.append(dictionary[w])
+            # Add wc to the dictionary.
+            dictionary[wc] = dict_size
+            dict_size += 1
+            w = c
+ 
+    # Output the code for w.
+    if w:
+        result.append(dictionary[w])
+    return ''.join([str(x) for x in result])
+
+
 class GPSD(Daemon):
     """
     This is the main communications controller this collects GPS
@@ -33,7 +61,7 @@ class GPSD(Daemon):
             if moved > 0.75:
                 self.location = (lat, lon)
                 self.start_time = time.time()
-                message = zlib.compress(str(lat)+":"+str(lon), 8)
+                message = compress(str(lat)+":"+str(lon))
                 self.hologram.sendMessage(message, topics=["gps"])
 
     def run(self):
@@ -92,7 +120,7 @@ class GPSD(Daemon):
                 sys.stderr.write("Invalid message\n")
                 return false
         if parts[0] == "gps":
-            message = zlib.compress(str(self.location[0])+":"+str(self.location[1]), 8)
+            message = compress(str(self.location[0])+":"+str(self.location[1]))
             self.hologram.sendMessage(message, topics=["gps"])
         elif parts[0] == "gpsd":
             message = str(self.location[0])+":"+str(self.location[1])
@@ -118,7 +146,7 @@ class GPSD(Daemon):
                 truckFile.write(parts[2])
                 truckFile.close()
                 self.truck = parts[2]
-            self.hologram.sendMessage(zlib.compress("truck:"+self.truck, 8), topics=["tail"])
+            self.hologram.sendMessage(compress("truck:"+self.truck), topics=["tail"])
 
 if __name__ == "__main__":
     daemon = GPSD('/tmp/daemon-py-gpsd.pid', '/dev/null', '/var/log/gpsd.log', '/var/log/gpsd.err')
