@@ -29,7 +29,7 @@ class GPSD(Daemon):
     def addLocation(self, lat, lon):
         moved = distance.distance(self.location, (lat, lon)).km
         elapsed_time = time.time() - self.start_time
-        if elapsed_time > 200:
+        if elapsed_time > 30:
             if moved > 0.75:
                 self.location = (lat, lon)
                 self.start_time = time.time()
@@ -54,10 +54,14 @@ class GPSD(Daemon):
         gpsIn = ""
         while True:
             while gpsIn.find('GGA') == -1:
-                gpsIn = self.serialPort.readline()            
-            location = pynmea2.parse(gpsIn)
-            self.addLocation(location.latitude, location.longitude)
-            gpsIn = ""
+                gpsIn = self.serialPort.readline()  
+            if gpsIn.find('GGA') != -1:
+                try:
+                    location = pynmea2.parse(gpsIn)
+                    self.addLocation(location.latitude, location.longitude)
+                except:
+                    pass
+                gpsIn = ""
             time.sleep(1)
 
     def tail(self, f, n, offset=0):
