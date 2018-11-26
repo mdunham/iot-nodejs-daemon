@@ -11,33 +11,6 @@ from geopy import distance
 from subprocess import call
 
 
-def compress(uncompressed):
-    """Compress a string to a list of output symbols."""
- 
-    # Build the dictionary.
-    dict_size = 256
-    dictionary = dict((chr(i), i) for i in xrange(dict_size))
-    # in Python 3: dictionary = {chr(i): i for i in range(dict_size)}
- 
-    w = ""
-    result = []
-    for c in uncompressed:
-        wc = w + c
-        if wc in dictionary:
-            w = wc
-        else:
-            result.append(dictionary[w])
-            # Add wc to the dictionary.
-            dictionary[wc] = dict_size
-            dict_size += 1
-            w = c
- 
-    # Output the code for w.
-    if w:
-        result.append(dictionary[w])
-    return zlib.compress(','.join([str(x) for x in result]))
-
-
 class GPSD(Daemon):
     """
     This is the main communications controller this collects GPS
@@ -61,7 +34,7 @@ class GPSD(Daemon):
             if moved > 0.75:
                 self.location = (lat, lon)
                 self.start_time = time.time()
-                message = str(lat)+":"+str(lon)
+                message = "@" + zlib.compress((str(lat)+":"+str(lon)).encode('utf8')) + "@"
                 self.hologram.sendMessage(message, topics=["gps"])
 
     def run(self):
@@ -120,7 +93,7 @@ class GPSD(Daemon):
                 sys.stderr.write("Invalid message\n")
                 return false
         if parts[0] == "gps":
-            message = (str(self.location[0])+":"+str(self.location[1]))
+            message = "@"+zlib.compress((str(self.location[0])+":"+str(self.location[1])).encode('utf8'))+"@"
             self.hologram.sendMessage(message, topics=["gps"])
         elif parts[0] == "gpsd":
             message = str(self.location[0])+":"+str(self.location[1])
