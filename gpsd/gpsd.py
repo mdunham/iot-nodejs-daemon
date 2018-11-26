@@ -30,7 +30,7 @@ class GPSD(Daemon):
     def addLocation(self, lat, lon):
         moved = distance.distance(self.location, (lat, lon)).km
         elapsed_time = time.time() - self.start_time
-        if elapsed_time > 30:
+        if elapsed_time > 120:
             if moved > 0.75:
                 self.location = (lat, lon)
                 self.start_time = time.time()
