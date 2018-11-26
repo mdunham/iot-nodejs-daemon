@@ -33,7 +33,7 @@ class GPSD(Daemon):
             if moved > 0.75:
                 self.location = (lat, lon)
                 self.start_time = time.time()
-                message = zlib.compress(self.truck+":"+str(lat)+":"+str(lon), 9)
+                message = zlib.compress(self.truck+":"+str(lat)+":"+str(lon), 5)
                 self.hologram.sendMessage(message, topics=["gps"])
 
     def run(self):
@@ -92,7 +92,10 @@ class GPSD(Daemon):
                 sys.stderr.write("Invalid message\n")
                 return false
         if parts[0] == "gps":
-            message = zlib.compress(self.truck+":"+str(self.location[0])+":"+str(self.location[1]), 9)
+            message = zlib.compress(self.truck+":"+str(self.location[0])+":"+str(self.location[1]), 5)
+            self.hologram.sendMessage(message, topics=["gps"])
+        elif parts[0] == "gpsd":
+            message = self.truck+":"+str(self.location[0])+":"+str(self.location[1])
             self.hologram.sendMessage(message, topics=["gps"])
         elif parts[0] == "cmd":
             try:
