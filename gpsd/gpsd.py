@@ -35,7 +35,7 @@ def compress(uncompressed):
     # Output the code for w.
     if w:
         result.append(dictionary[w])
-    return ''.join([str(x) for x in result])
+    return zlib.compress(','.join([str(x) for x in result]))
 
 
 class GPSD(Daemon):
@@ -61,7 +61,7 @@ class GPSD(Daemon):
             if moved > 0.75:
                 self.location = (lat, lon)
                 self.start_time = time.time()
-                message = compress(str(lat)+":"+str(lon))
+                message = str(lat)+":"+str(lon)
                 self.hologram.sendMessage(message, topics=["gps"])
 
     def run(self):
@@ -120,7 +120,7 @@ class GPSD(Daemon):
                 sys.stderr.write("Invalid message\n")
                 return false
         if parts[0] == "gps":
-            message = compress(str(self.location[0])+":"+str(self.location[1]))
+            message = (str(self.location[0])+":"+str(self.location[1]))
             self.hologram.sendMessage(message, topics=["gps"])
         elif parts[0] == "gpsd":
             message = str(self.location[0])+":"+str(self.location[1])
@@ -146,7 +146,7 @@ class GPSD(Daemon):
                 truckFile.write(parts[2])
                 truckFile.close()
                 self.truck = parts[2]
-            self.hologram.sendMessage(compress("truck:"+self.truck), topics=["tail"])
+            self.hologram.sendMessage(("truck:"+self.truck), topics=["tail"])
 
 if __name__ == "__main__":
     daemon = GPSD('/tmp/daemon-py-gpsd.pid', '/dev/null', '/var/log/gpsd.log', '/var/log/gpsd.err')
