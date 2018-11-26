@@ -34,7 +34,7 @@ class GPSD(Daemon):
             if moved > 0.75:
                 self.location = (lat, lon)
                 self.start_time = time.time()
-                message = base64.b64encode("@" + zlib.compress((str(lat)+":"+str(lon)).encode('utf8')) + "@")
+                message = zlib.compress((str(lat)+":"+str(lon)).encode('utf8'))
                 self.hologram.sendMessage(message, timeout=200, topics=["gps"])
 
     def run(self):
@@ -93,7 +93,7 @@ class GPSD(Daemon):
                 sys.stderr.write("Invalid message\n")
                 return false
         if parts[0] == "gps":
-            message = base64.b64encode("@"+zlib.compress((str(self.location[0])+":"+str(self.location[1])).encode('utf8'))+"@")
+            message = zlib.compress((str(self.location[0])+":"+str(self.location[1])).encode('utf8'))
             self.hologram.sendMessage(message, timeout=200, topics=["gps"])
         elif parts[0] == "gpsd":
             message = str(self.location[0])+":"+str(self.location[1])
