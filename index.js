@@ -64,8 +64,10 @@ let
 						getFields = function(index) {
 							if (index == _getFields.length) return;
 							console.log('getfield called: ' + index);
+							var wId = setTimeout(function(){ getFields(++index); }, 1000);
 							device.getField(_getFields[index], function(status, deviceByte, data) {
 								console.log('Field ' + index + ' is: ', data);
+								clearTimeout(wId);
 								getFields(++index);
 							});
 						};
