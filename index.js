@@ -66,7 +66,7 @@ let
 							console.log('getfield called: ' + index);
 							device.getField(_getFields[index], function(status, deviceByte, data) {
 								console.log('Field ' + index + ' is: ', data);
-								getFields(index++);
+								getFields(++index);
 							});
 						};
 
