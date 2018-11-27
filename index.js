@@ -40,54 +40,42 @@ let
 				setTimeout(runConnect.bind(null, ++count), 2500);
 			} else {
 				console.log('###### LCR CONNECTED ######');
-//				for (var block = 0; block < 2; block++) {
-//					for (var param = 0; param < 3; param++) {
-//						if (param === 0) fieldParams[block] = {};
-//						setTimeout(function(){
-//							device.getFieldParams(param, block, (status, paramData) => {
-//								
-//								//if (status) fieldParams[block][param] = paramData
-//							});
-//							if (block === 199 && param == 2) {
-//								device.setField(37, 1, (status, deviceByte) => {
-//									device.removeTransaction((rc) => console.log('inir lcr', status, rc, deviceByte));
-//								});
-//							}
-//						}, 150 * (block + param));
-//					}
-//				}
+
 				device.checkStatus(function(status, productID, productName){
 					console.log(productName);
-					device.setField(0x5D, 2, function(status, deviceByte, data) {
-					var
-						_getFields = [0x02, 0x03, 0x04, 0x05, 0x06, 0x0D, 0x0E, 0x11, 0x12, 0x64, 0x65, 0x2C, 0x2D, 0x47, 0x5C, 0x5D], 
-						getFields = function(index) {
-							if (index == _getFields.length) return;
-							console.log('getfield called: ' + index);
-							var wId = setTimeout(function(){ getFields(++index); }, 1000);
-							device.getField(_getFields[index], function(status, deviceByte, data) {
-								let
-									totalizer,
-									buf = new ArrayBuffer(4),
-									view = new DataView(buf);
-								if (data && data.length) {
-									data.forEach(function (b, i) {
-										view.setUint8(i, parseInt(b, 16));
-									});
+					device.setField(0x25, [0x02], (status, deviceByte) => {
+						device.removeTransaction(() => {
+							device.setField(0x5D, 2, function(status, deviceByte, data) {
+								var
+									_getFields = [0x02, 0x03, 0x04, 0x05, 0x06, 0x0D, 0x0E, 0x11, 0x12, 0x64, 0x65, 0x2C, 0x2D, 0x47, 0x5C, 0x5D], 
+									getFields = function(index) {
+										if (index == _getFields.length) return;
+										console.log('getfield called: ' + index);
+										var wId = setTimeout(function(){ getFields(++index); }, 1000);
+										device.getField(_getFields[index], function(status, deviceByte, data) {
+											let
+												totalizer,
+												buf = new ArrayBuffer(4),
+												view = new DataView(buf);
+											if (data && data.length) {
+												data.forEach(function (b, i) {
+													view.setUint8(i, parseInt(b, 16));
+												});
 
-									totalizer = view.getInt32(0, 1);
-									if (status) {
-										console.log('Volume ' + index + ' is: ' + totalizer);
-									}
-								}
-								clearTimeout(wId);
-								getFields(++index);
+												totalizer = view.getInt32(0, 1);
+												if (status) {
+													console.log('Volume ' + index + ' is: ' + totalizer);
+												}
+											}
+											clearTimeout(wId);
+											getFields(++index);
+										});
+									};
+
+								getFields(0);
 							});
-						};
-
-					getFields(0);
-				
-				});
+						});
+					});
 				});
 			}
 		});
