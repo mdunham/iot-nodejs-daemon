@@ -58,15 +58,27 @@ let
 //				}
 				device.checkStatus(function(status, productID, productName){
 					console.log(productName);
-				
 					var
-						_getFields = [0x1B, 0x3C, 0x13, 0x27, 0x26, 0x26, 0x00, 0x5E, 0x01, 0x0B, 0x19, 0x57, 0x56], 
+						_getFields = [0x11, 0x12, 0x64, 0x65], 
 						getFields = function(index) {
 							if (index == _getFields.length) return;
 							console.log('getfield called: ' + index);
 							var wId = setTimeout(function(){ getFields(++index); }, 1000);
 							device.getField(_getFields[index], function(status, deviceByte, data) {
-								console.log('Field ' + index + ' is: ', data);
+								let
+									totalizer,
+									buf = new ArrayBuffer(4),
+									view = new DataView(buf);
+
+								data.forEach(function (b, i) {
+									view.setUint8(i, parseInt(b, 16));
+								});
+
+								totalizer = view.getInt32(0, 1);
+								if (status) {
+									console.log('Volume ' + index + ' is: ' + totalizer);
+								}
+					
 								clearTimeout(wId);
 								getFields(++index);
 							});
