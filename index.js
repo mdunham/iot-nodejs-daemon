@@ -49,10 +49,9 @@ let
 								device.setField(0x5D, [0x00, 0x00, 0x00, 0x00], function(status, deviceByte, data) {});
 								setTimeout(function(){
 									var
-										_getFields = [0x2E, 0x2F, 0x37, 0x02, 0x03, 0x04, 0x05, 0x06, 0x0D, 0x0E, 0x11, 0x12, 0x64, 0x65, 0x2C, 0x2D, 0x47, 0x5C, 0x5D], 
+										_getFields = [0x2E, 0x2F, 0x37, 0x02, 0x03, 0x04, 0x64, 0x05, 0x06, 0x0D, 0x0E, 0x11, 0x12, 0x64, 0x65, 0x2C, 0x2D, 0x47, 0x5C, 0x5D], 
 										getFields = function(index) {
 											if (index == _getFields.length) return;
-											console.log('getfield called: ' + index);
 											var wId = setTimeout(function(){ getFields(++index); }, 1000);
 											device.getField(_getFields[index], function(status, deviceByte, data) {
 												let
@@ -63,7 +62,7 @@ let
 													data.forEach(function (b, i) {
 														view.setUint8(i, parseInt(b, 16));
 													});
-													console.log('1: ' + view.getInt32(0, 1) + '  2: ' + view.getFloat32(0, 1) + '  3: ' + view.getInt32(0) + '  4: ' + view.getFloat32(0))
+													console.log('3: ' + view.getInt32(0))
 													
 													if (status) {
 														//console.log('Volume ' + index + ' is: ' + totalizer);
