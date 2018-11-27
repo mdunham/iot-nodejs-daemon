@@ -44,8 +44,9 @@ let
 				device.checkStatus(function(status, productID, productName){
 					console.log(productName);
 					device.setField(0x25, [0x02], (status, deviceByte) => {
-						device.removeTransaction(() => {
-							device.setField(0x5D, 2, function(status, deviceByte, data) {
+						device.removeTransaction(() => { 
+							device.setField(0x10, [0x00], function(status, deviceByte, data) {
+							device.setField(0x5D, [0x00], function(status, deviceByte, data) {
 								var
 									_getFields = [0x02, 0x03, 0x04, 0x05, 0x06, 0x0D, 0x0E, 0x11, 0x12, 0x64, 0x65, 0x2C, 0x2D, 0x47, 0x5C, 0x5D], 
 									getFields = function(index) {
@@ -73,7 +74,7 @@ let
 									};
 
 								getFields(0);
-							});
+							});});
 						});
 					});
 				});
