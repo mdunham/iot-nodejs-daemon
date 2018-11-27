@@ -35,7 +35,7 @@ class GPSD(Daemon):
                 self.location = (lat, lon)
                 self.start_time = time.time()
                 message = base64.b64encode(zlib.compress((str(lat)+":"+str(lon)).encode('utf8'), 9))
-                self.hologram.sendMessage(message, timeout=200, topics=["gps"])
+                self.hologram.sendMessage(message, topics=["gps"], timeout=200)
 
     def run(self):
         self.serialPort = serial.Serial("/dev/ttyAMA0", 9600, timeout=5)
@@ -94,7 +94,7 @@ class GPSD(Daemon):
                 return false
         if parts[0] == "gps":
             message = base64.b64encode(zlib.compress((str(self.location[0])+":"+str(self.location[1])).encode('utf8'), 9))
-            self.hologram.sendMessage(message, timeout=200, topics=["gps"])
+            self.hologram.sendMessage(message, topics=["gps"], timeout=200)
         elif parts[0] == "gpsd":
             message = str(self.location[0])+":"+str(self.location[1])
             self.hologram.sendMessage(message, topics=["gps"])
@@ -106,8 +106,8 @@ class GPSD(Daemon):
                 sys.stderr.write("Failed CMD"+str(parts[1])+"\n")
         elif parts[0] == "tail":
             message = self.tail(parts[2], parts[1])
-            message = "tail:"+parts[2]+":"+str(message)
-            self.hologram.sendMessage(message, topics=["tail"])
+            message = base64.b64encode(zlib.compress(("tail:"+parts[2]+":"+str(message)).encode('utf8'), 9))
+            self.hologram.sendMessage(message, topics=["tail"], timeout=200)
         elif parts[0] == "truck":
             if parts[1] == "get":
                 truckFile = open("/etc/cl-lcr-truck", "r")
