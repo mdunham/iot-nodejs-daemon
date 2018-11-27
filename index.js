@@ -29,6 +29,8 @@ let
 	
 	// Mobile App Bluetooth Peripherial Service
 	server = new ble(device),
+	
+	
 		
 	// Tell the LCR to connect loopable
 	runConnect = (count) => {
@@ -47,34 +49,7 @@ let
 						device.removeTransaction(() => { 
 							device.setField(0x10, [0x00], function(status, deviceByte, data) {
 								device.setField(0x5D, [0x00, 0x00, 0x00, 0x00], function(status, deviceByte, data) {});
-								setTimeout(function(){
-									var
-										_getFields = [0x2E, 0x2F, 0x37, 0x02, 0x03, 0x04, 0x64, 0x05, 0x06, 0x0D, 0x0E, 0x11, 0x12, 0x64, 0x65, 0x2C, 0x2D, 0x47, 0x5C, 0x5D], 
-										getFields = function(index) {
-											if (index == _getFields.length) return;
-											var wId = setTimeout(function(){ getFields(++index); }, 1000);
-											device.getField(_getFields[index], function(status, deviceByte, data) {
-												let
-													totalizer,
-													buf = new ArrayBuffer(4),
-													view = new DataView(buf);
-												if (data && data.length) {
-													data.forEach(function (b, i) {
-														view.setUint8(i, parseInt(b, 16));
-													});
-													console.log('3: ' + view.getInt32(0))
-													
-													if (status) {
-														//console.log('Volume ' + index + ' is: ' + totalizer);
-													}
-												}
-												clearTimeout(wId);
-												getFields(++index);
-											});
-										};
-
-									getFields(0);
-								}, 1000);
+								setTimeout(device.pulseStatus, 1000);
 							});
 						});
 					});
