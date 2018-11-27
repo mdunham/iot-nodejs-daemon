@@ -56,9 +56,18 @@ let
 //						}, 150 * (block + param));
 //					}
 //				}
-				device.getField(0x3C, function(status, deviceByte, data) {
-					console.log('Field 3C is: ', data);
+				device.checkStatus(function(status, productID, productName){
+					console.log(productName);
 				});
+				var _getFields = [0x3C, 0x13, 0x27, 0x26, 0x26, 0x00, 0x5E, 0x01, 0x0B, 0x19, 0x57, 0x56], getFields = function(index) {
+					if (index = _getFields.length) return;
+					device.getField(_getFields[index], function(status, deviceByte, data) {
+						console.log('Field ' + index + ' is: ', data);
+						getFields(index++);
+					});
+				}
+				
+				getFields(0);
 			}
 		});
 	};
