@@ -28,10 +28,9 @@ class GPSD(Daemon):
         truckFile.close()
 
     def addLocation(self, lat, lon):
-        if lat < 2:
-            return false
-        if lon > -2:
-            return false
+        if lat < 2 or lon > -2:
+            self.callGps(True)
+            return False
         moved = distance.distance(self.location, (lat, lon)).km
         elapsed_time = time.time() - self.start_time
         if elapsed_time > 118:
@@ -55,28 +54,27 @@ class GPSD(Daemon):
             gpsFile2.close()
             self.hologram.sendMessage(message, topics=["gps"], timeout=20)
         except:
+            print "Error during compressGPS Except Reached"
             pass
     
-    def callGps(self):
-        try:
-            if self.location is None or self.location[0] is None or self.location[1] is None:
-                location = hologram.network.location
-                i = 0
-                while location is None or i < 10:
-                    if location is None:
-                        time.sleep(1)
-                        i += 1
-                        location = hologram.network.location
-
-                if location is None:
-                    self.location[0] = location.latitude
-                    self.location[1] = location.longitude
-                    self.compressGps(self.location[0], self.location[1])
-                    return false
-            else:
+    def callGps(self, forceHologram=None):    
+        if self.location is None or self.location[0] is None or self.location[1] is None or forceHologram is not None:
+            location = self.hologram.network.location
+            i=0
+            while location is None:
+                location = self.hologram.network.location
+                time.sleep(1)
+                if str(i) == "10" or location is not None:
+                    print "got location"
+                    break
+                else:
+                    i += 1
+                
+            if location is not None:
+                self.location = (location.latitude,location.longitude)
                 self.compressGps(self.location[0], self.location[1])
-        except:
-            pass
+        else:
+            self.compressGps(self.location[0], self.location[1])
 
     def run(self):
         self.serialPort = serial.Serial("/dev/ttyAMA0", 9600, timeout=5)
@@ -141,6 +139,8 @@ class GPSD(Daemon):
                 return false
         if parts[0] == "gps":
             self.callGps()
+        elif parts[0] == "gpsd":
+            self.callGps(1)
         elif parts[0] == "cmd":
             try:
                 sys.stderr.write("Running CMD: "+str(parts[1])+"\n")
