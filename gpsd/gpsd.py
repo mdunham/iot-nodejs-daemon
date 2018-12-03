@@ -32,7 +32,7 @@ class GPSD(Daemon):
         try:
             elapsed_time = time.time() - self.start_time
             if lat is None or lon is None:
-                if elapsed_time > (118 * self.multiplier):
+                if elapsed_time > (230 * self.multiplier):
                     self.start_time = time.time()
                     self.callGps(True)
                 return False
