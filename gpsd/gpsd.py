@@ -4,7 +4,7 @@
 # pip2 install geopy
 # pip2 install serial
 
-import os, sys, time, serial, pynmea2, zlib, base64
+import os, sys, time, serial, pynmea2, zlib, base64, datetime
 from daemon import Daemon
 from Hologram.HologramCloud import HologramCloud
 from geopy import distance
@@ -26,22 +26,23 @@ class GPSD(Daemon):
         self.uuid = uuidFile.readline().rstrip()
         uuidFile.close()
         truckFile.close()
+        self.multiplier = 1
     
     def addLocation(self, lat, lon):
         try:
             elapsed_time = time.time() - self.start_time
             if lat is None or lon is None:
-                if elapsed_time > 118:
+                if elapsed_time > (118 * self.multiplier):
                     self.start_time = time.time()
                     self.callGps(True)
                 return False
             moved = distance.distance(self.location, (lat, lon)).km
-            if elapsed_time > 118:
+            if elapsed_time > (118 * self.multiplier):
                 if moved > 0.50:
                     self.location = (lat, lon)
                     self.start_time = time.time()
                     self.compressGps(lat, lon)
-                elif elapsed_time > 880:
+                elif elapsed_time > (880 * self.multiplier):
                     self.start_time = time.time()
                     self.compressGps(lat, lon)
         except:
@@ -53,7 +54,7 @@ class GPSD(Daemon):
         try:
             elapsed_time = time.time() - self.start_time
             moved = distance.distance(self.location, (lat, lon)).km
-            if moved > 0.50 or elapsed_time > 880:
+            if moved > 0.50 or elapsed_time > (880 * self.multiplier):
                 self.start_time = time.time()
                 gpsFile = open("/root/gps.in", "w")
                 gpsFile.write((str(lat)+":"+str(lon)).encode('utf8'));
@@ -115,7 +116,7 @@ class GPSD(Daemon):
                 while gpsIn.find('GGA') == -1:
                     elapsed_time = time.time() - self.start_time
                     gpsIn = self.serialPort.readline()
-                    if elapsed_time > 1200:
+                    if elapsed_time > (1200 * self.multiplier):
                         self.start_time = time.time()
                         self.callGps()
             except:
@@ -133,6 +134,11 @@ class GPSD(Daemon):
                     sys.stderr.write(sys.exc_info()[0] + "\n")
                     pass
             time.sleep(1)
+            currentDT = datetime.datetime.now()
+            if currentDT.hour > 18 or currentDT.hour < 8:
+                self.multiplier = 5
+            else:
+                self.multiplier = 1
     
     def tail(self, f, n, offset=0):
         data = ""
