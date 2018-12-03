@@ -41,8 +41,8 @@ class GPSD(Daemon):
                     self.start_time = time.time()
                     self.callGps(True)
                 return False
-            moved = distance.distance(self.location, (lat, lon)).km
-            if elapsed_time > (118 * self.multiplier):
+            moved = distance.distance(self.location, (lat, lon)).miles
+            if elapsed_time > (120 * self.multiplier):
                 if moved > 0.50:
                     self.compressGps(lat, lon)
                 elif elapsed_time > (880 * self.multiplier):
@@ -59,7 +59,7 @@ class GPSD(Daemon):
             else:
                 self.multiplier = 1
             elapsed_time = time.time() - self.start_time
-            moved = distance.distance(self.location, (lat, lon)).km
+            moved = distance.distance(self.location, (lat, lon)).miles
             if moved > 0.50 or elapsed_time > (880 * self.multiplier):
                 self.start_time = time.time()
                 gpsFile = open("/root/gps.in", "w")
