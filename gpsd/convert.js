@@ -18,6 +18,10 @@ fs.readFile('/root/gps.in', { encoding: 'utf-8' }, function(err, data){
 			
 		lat = lat.toString().replace('.', '');
 		lon = lon.toString().replace(/\.|\-/g, '');
+		if ( ! parseInt(lat) || ! parseInt(lon)) {
+			process.exit(0);
+			return false;
+		}
 		lat = lat.match(/..|./g);
 		lon = lon.match(/..|./g);
 		
@@ -34,9 +38,12 @@ fs.readFile('/root/gps.in', { encoding: 'utf-8' }, function(err, data){
 				return console.log('Unable to write gps.out', err);
 			}
 			process.exit(0);
+			return false;
 		}); 
     } else {
         console.log(err);
+		process.exit(0);
     }
 });
 
+process.exit(0);
