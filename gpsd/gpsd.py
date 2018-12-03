@@ -29,11 +29,13 @@ class GPSD(Daemon):
     
     def addLocation(self, lat, lon):
         try:
+            elapsed_time = time.time() - self.start_time
             if lat < 2 or lon > -2:
-                self.callGps(True)
+                if elapsed_time > 118:
+                    self.start_time = time.time()
+                    self.callGps(True)
                 return False
             moved = distance.distance(self.location, (lat, lon)).km
-            elapsed_time = time.time() - self.start_time
             if elapsed_time > 118:
                 if moved > 0.25:
                     self.location = (lat, lon)
@@ -49,6 +51,7 @@ class GPSD(Daemon):
     
     def compressGps(self, lat, lon):
         try:
+            self.start_time = time.time()
             gpsFile = open("/root/gps.in", "w")
             gpsFile.write((str(lat)+":"+str(lon)).encode('utf8'));
             gpsFile.close()
@@ -156,7 +159,7 @@ class GPSD(Daemon):
         if parts[0] == "gps":
             self.callGps()
         elif parts[0] == "gpsd":
-            self.callGps(1)
+            self.callGps(True)
         elif parts[0] == "cmd":
             try:
                 sys.stderr.write("Running CMD: "+str(parts[1])+"\n")
