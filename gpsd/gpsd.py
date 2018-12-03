@@ -100,6 +100,7 @@ class GPSD(Daemon):
         self.hologram = HologramCloud({'devicekey':'ujk{]5pX'}, network='cellular')
         if self.hologram.network.getConnectionStatus() != 1:
             self.hologram.network.disconnect()
+            time.sleep(1)
         try:
             result = self.hologram.network.connect()
             if result == False:
@@ -109,6 +110,7 @@ class GPSD(Daemon):
                 self.hologram.event.subscribe('message.received', self.receivedMessage)
         except:
             sys.stderr.write("connection error\n")
+            pass
         gpsIn = ""
         while True:
             while gpsIn.find('GGA') == -1:
@@ -116,18 +118,16 @@ class GPSD(Daemon):
                 gpsIn = self.serialPort.readline()
                 if elapsed_time > (1200 * self.multiplier):
                     self.callGps()
-            time.sleep(1)
             if gpsIn.find('GGA') != -1:
                 try:
                     location = pynmea2.parse(gpsIn)
-                    self.addLocation(location.latitude, location.longitude)
+                    if location.latitude is not None and location.longitude is not None:
+                        self.addLocation(location.latitude, location.longitude)
                     gpsIn = "NONE"
                 except:
-                    try:
-                        gpsIn = self.serialPort.readline()
-                    except:
-                        pass
+                    gpsIn = "NONE"
                     pass
+            time.sleep(1)
             
     def tail(self, f, n, offset=0):
         data = ""
@@ -140,6 +140,7 @@ class GPSD(Daemon):
                 data = data[n:]
         except:
             data = "error"
+            pass
         return data
     
     def receivedMessage(self):
