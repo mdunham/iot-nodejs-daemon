@@ -48,7 +48,7 @@ class GPSD(Daemon):
                 elif elapsed_time > (880 * self.multiplier):
                     self.compressGps(lat, lon)
         except:
-            sys.stderr.write("Add Location Error")
+            print "Add Location Error"
             pass
     
     def compressGps(self, lat, lon):
@@ -72,24 +72,27 @@ class GPSD(Daemon):
                 gpsFile2.close()
                 self.hologram.sendMessage(message, topics=["gps"], timeout=20)
         except:
-            sys.stderr.write("Compress GPS Error")
+            print "Compress GPS Error"
             pass
     
     def callGps(self, forceHologram=None):
-        if self.location is None or self.location[0] is None or self.location[1] is None or forceHologram is not None:
-            location = self.hologram.network.location
-            i = 0
-            while location is None and i < 5:
-                time.sleep(1)
+        try:
+            if self.location is None or self.location[0] is None or self.location[1] is None or forceHologram is not None:
                 location = self.hologram.network.location
-                if location is None:
-                    i += 1
-                else:
-                    i = 10
-            if location is not None:
-                self.compressGps(location.latitude, location.longitude)
-        else:
-            self.compressGps(self.location[0], self.location[1])
+                i = 0
+                while location is None and i < 5:
+                    time.sleep(1)
+                    location = self.hologram.network.location
+                    if location is None:
+                        i += 1
+                    else:
+                        i = 10
+                if location is not None:
+                    self.compressGps(location.latitude, location.longitude)
+            else:
+                self.compressGps(self.location[0], self.location[1])
+        except:
+            pass
     
     def run(self):
         self.serialPort = serial.Serial("/dev/ttyAMA0", 9600, timeout=5)
@@ -117,9 +120,12 @@ class GPSD(Daemon):
                 try:
                     location = pynmea2.parse(gpsIn)
                     self.addLocation(location.latitude, location.longitude)
-                    gpsIn = self.serialPort.readline()
+                    gpsIn = "NONE"
                 except:
-                    gpsIn = self.serialPort.readline()
+                    try:
+                        gpsIn = self.serialPort.readline()
+                    except:
+                        pass
                     pass
             
     def tail(self, f, n, offset=0):
