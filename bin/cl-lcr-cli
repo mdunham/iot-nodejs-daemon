@@ -50,7 +50,7 @@ case "$1" in
 	;;
 	verify)
 		mDATE=`date '+%Y-%m-%d %H:%M:%S'`
-		systemctl is-active --quiet cl-lcr-daemon || (service cl-lcr-daemon start; echo "service was down!" >> /var/log/cl-lcr-daemon.err)
+		systemctl is-active --quiet cl-lcr-daemon || (service cl-lcr-daemon start && echo "$mDATE - Service was down!" >> /var/log/cl-lcr-daemon.err)
 		pid=""
 		if [ -f "/tmp/daemon-py-gpsd.pid" ]; then
 			pid=$(cat /tmp/daemon-py-gpsd.pid 2>/dev/null)
