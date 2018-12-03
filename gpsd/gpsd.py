@@ -38,16 +38,22 @@ class GPSD(Daemon):
             if moved > 0.25:
                 self.location = (lat, lon)
                 self.start_time = time.time()
-                gpsFile = open("/root/gps.in", "w")
-                gpsFile.write((str(lat)+":"+str(lon)).encode('utf8'));
-                gpsFile.close()
-                call("/usr/local/bin/node /root/cl-lcr-daemon/gpsd/convert.js", shell=True)
-                time.sleep(2)
-                gpsFile2 = open("/root/gps.out", "r")
-                message = gpsFile2.readline().rstrip()
-                gpsFile2.close()
-                self.hologram.sendMessage(message, topics=["gps"], timeout=20)
-
+                compressGps(lat, lon)
+            elif elapsed_time > 880:
+                self.start_time = time.time()
+                compressGps(lat, lon)
+                
+    def compressGps(self, lat, lon):
+        gpsFile = open("/root/gps.in", "w")
+        gpsFile.write((str(lat)+":"+str(lon)).encode('utf8'));
+        gpsFile.close()
+        call("/usr/local/bin/node /root/cl-lcr-daemon/gpsd/convert.js", shell=True)
+        time.sleep(2)
+        gpsFile2 = open("/root/gps.out", "r")
+        message = gpsFile2.readline().rstrip()
+        gpsFile2.close()
+        self.hologram.sendMessage(message, topics=["gps"], timeout=20)
+    
     def run(self):
         self.serialPort = serial.Serial("/dev/ttyAMA0", 9600, timeout=5)
         self.start_time = 0
@@ -71,9 +77,10 @@ class GPSD(Daemon):
                 try:
                     location = pynmea2.parse(gpsIn)
                     self.addLocation(location.latitude, location.longitude)
+                    gpsIn = ""
                 except:
                     pass
-                gpsIn = ""
+                    gpsIn = ""
             time.sleep(1)
 
     def tail(self, f, n, offset=0):
@@ -104,16 +111,21 @@ class GPSD(Daemon):
                 sys.stderr.write("Invalid message\n")
                 return false
         if parts[0] == "gps":
-            gpsFile = open("/root/gps.in", "w")
-            gpsFile.write((str(self.location[0])+":"+str(self.location[1])).encode('utf8'));
-            gpsFile.close()
-            call("/usr/local/bin/node /root/cl-lcr-daemon/gpsd/convert.js", shell=True)
-            time.sleep(2)
-            gpsFile2 = open("/root/gps.out", "r")
-            message = gpsFile2.readline().rstrip()
-            gpsFile2.close()
-            self.hologram.sendMessage(message, topics=["gps"], timeout=20)
-            self.hologram.sendMessage(message, topics=["gps"], timeout=200)
+            try:
+                if ! self.location or ! self.location[0] or ! self.location[1]:
+                    location = hologram.network.location
+
+                    if location is None:
+                        location = hologram.network.location
+
+                    if location is None:
+                        location = false
+                    else:
+                        self.location[0] = location.latitude
+                        self.location[1] = location.longitude
+            except:
+                pass
+            compressGps(self.location[0], self.location[1])
         elif parts[0] == "gpsd":
             message = str(self.location[0])+":"+str(self.location[1])
             self.hologram.sendMessage(message, topics=["gps"])
