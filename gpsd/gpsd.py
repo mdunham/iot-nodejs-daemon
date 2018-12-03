@@ -116,6 +116,7 @@ class GPSD(Daemon):
                 gpsIn = self.serialPort.readline()
                 if elapsed_time > (1200 * self.multiplier):
                     self.callGps()
+            time.sleep(1)
             if gpsIn.find('GGA') != -1:
                 try:
                     location = pynmea2.parse(gpsIn)
