@@ -72,7 +72,14 @@ class GPSD(Daemon):
         gpsIn = ""
         while True:
             while gpsIn.find('GGA') == -1:
-                gpsIn = self.serialPort.readline()  
+                gpsIn = self.serialPort.readline()
+            try:
+                loca = self.hologram.network.location
+                if loca is None:
+                    loca = self.hologram.network.location
+                print str(loca.latitude)+":"+str(loca.longitude)  
+            except:
+                pass
             if gpsIn.find('GGA') != -1:
                 try:
                     location = pynmea2.parse(gpsIn)
