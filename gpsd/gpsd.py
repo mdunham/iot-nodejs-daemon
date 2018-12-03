@@ -30,14 +30,14 @@ class GPSD(Daemon):
     def addLocation(self, lat, lon):
         try:
             elapsed_time = time.time() - self.start_time
-            if lat < 2 or lon > -2:
+            if lat is None or lon is None:
                 if elapsed_time > 118:
                     self.start_time = time.time()
                     self.callGps(True)
                 return False
             moved = distance.distance(self.location, (lat, lon)).km
             if elapsed_time > 118:
-                if moved > 0.25:
+                if moved > 0.50:
                     self.location = (lat, lon)
                     self.start_time = time.time()
                     self.compressGps(lat, lon)
@@ -51,16 +51,19 @@ class GPSD(Daemon):
     
     def compressGps(self, lat, lon):
         try:
-            self.start_time = time.time()
-            gpsFile = open("/root/gps.in", "w")
-            gpsFile.write((str(lat)+":"+str(lon)).encode('utf8'));
-            gpsFile.close()
-            call("/usr/local/bin/node /root/cl-lcr-daemon/gpsd/convert.js", shell=True)
-            time.sleep(2)
-            gpsFile2 = open("/root/gps.out", "r")
-            message = gpsFile2.readline().rstrip()
-            gpsFile2.close()
-            self.hologram.sendMessage(message, topics=["gps"], timeout=20)
+            elapsed_time = time.time() - self.start_time
+            moved = distance.distance(self.location, (lat, lon)).km
+            if moved > 0.50 or elapsed_time > 880:
+                self.start_time = time.time()
+                gpsFile = open("/root/gps.in", "w")
+                gpsFile.write((str(lat)+":"+str(lon)).encode('utf8'));
+                gpsFile.close()
+                call("/usr/local/bin/node /root/cl-lcr-daemon/gpsd/convert.js", shell=True)
+                time.sleep(1)
+                gpsFile2 = open("/root/gps.out", "r")
+                message = gpsFile2.readline().rstrip()
+                gpsFile2.close()
+                self.hologram.sendMessage(message, topics=["gps"], timeout=20)
         except:
             sys.stderr.write("Compress GPS Error: ")
             sys.stderr.write(sys.exc_info()[0] + "\n")
@@ -81,8 +84,10 @@ class GPSD(Daemon):
 
                 if location is not None:
                     self.location = (location.latitude,location.longitude)
+                    self.start_time = time.time()
                     self.compressGps(self.location[0], self.location[1])
             else:
+                self.start_time = time.time()
                 self.compressGps(self.location[0], self.location[1])
         except:
             sys.stderr.write("Call GPS Error: ")
@@ -111,8 +116,8 @@ class GPSD(Daemon):
                     elapsed_time = time.time() - self.start_time
                     gpsIn = self.serialPort.readline()
                     if elapsed_time > 1200:
+                        self.start_time = time.time()
                         self.callGps()
-                        self.start_time = time.time() - 200
             except:
                 sys.stderr.write("Main Loop 1 Error: ")
                 sys.stderr.write(sys.exc_info()[0] + "\n")
