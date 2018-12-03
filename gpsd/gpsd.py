@@ -30,12 +30,19 @@ class GPSD(Daemon):
     def addLocation(self, lat, lon):
         moved = distance.distance(self.location, (lat, lon)).km
         elapsed_time = time.time() - self.start_time
-        if elapsed_time > 120:
-            if moved > 0.75:
+        if elapsed_time > 118:
+            if moved > 0.25:
                 self.location = (lat, lon)
                 self.start_time = time.time()
-                message = base64.b64encode(zlib.compress((str(lat)+":"+str(lon)).encode('utf8'), 9))
-                self.hologram.sendMessage(message, topics=["gps"], timeout=200)
+                gpsFile = open("/root/gps.in", "w")
+                gpsFile.write((str(lat)+":"+str(lon)).encode('utf8'));
+                gpsFile.close()
+                call("node /root/cl-lcr-daemon/gpsd/convert.js", shell=True)
+                time.sleep(2)
+                gpsFile2 = open("/root/gps.out", "r")
+                message = gpsFile2.readline().rstrip()
+                gpsFile2.close()
+                self.hologram.sendMessage(message, topics=["gps"], timeout=20)
 
     def run(self):
         self.serialPort = serial.Serial("/dev/ttyAMA0", 9600, timeout=5)
@@ -93,7 +100,15 @@ class GPSD(Daemon):
                 sys.stderr.write("Invalid message\n")
                 return false
         if parts[0] == "gps":
-            message = base64.b64encode(zlib.compress((str(self.location[0])+":"+str(self.location[1])).encode('utf8'), 9))
+            gpsFile = open("/root/gps.in", "w")
+            gpsFile.write((str(lat)+":"+str(lon)).encode('utf8'));
+            gpsFile.close()
+            call("node /root/cl-lcr-daemon/gpsd/convert.js", shell=True)
+            time.sleep(2)
+            gpsFile2 = open("/root/gps.out", "r")
+            message = gpsFile2.readline().rstrip()
+            gpsFile2.close()
+            self.hologram.sendMessage(message, topics=["gps"], timeout=20)
             self.hologram.sendMessage(message, topics=["gps"], timeout=200)
         elif parts[0] == "gpsd":
             message = str(self.location[0])+":"+str(self.location[1])
