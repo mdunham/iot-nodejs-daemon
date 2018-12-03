@@ -38,25 +38,49 @@ class GPSD(Daemon):
             if moved > 0.25:
                 self.location = (lat, lon)
                 self.start_time = time.time()
-                compressGps(lat, lon)
+                self.compressGps(lat, lon)
             elif elapsed_time > 880:
                 self.start_time = time.time()
-                compressGps(lat, lon)
+                self.compressGps(lat, lon)
                 
     def compressGps(self, lat, lon):
-        gpsFile = open("/root/gps.in", "w")
-        gpsFile.write((str(lat)+":"+str(lon)).encode('utf8'));
-        gpsFile.close()
-        call("/usr/local/bin/node /root/cl-lcr-daemon/gpsd/convert.js", shell=True)
-        time.sleep(2)
-        gpsFile2 = open("/root/gps.out", "r")
-        message = gpsFile2.readline().rstrip()
-        gpsFile2.close()
-        self.hologram.sendMessage(message, topics=["gps"], timeout=20)
+        try:
+            gpsFile = open("/root/gps.in", "w")
+            gpsFile.write((str(lat)+":"+str(lon)).encode('utf8'));
+            gpsFile.close()
+            call("/usr/local/bin/node /root/cl-lcr-daemon/gpsd/convert.js", shell=True)
+            time.sleep(2)
+            gpsFile2 = open("/root/gps.out", "r")
+            message = gpsFile2.readline().rstrip()
+            gpsFile2.close()
+            self.hologram.sendMessage(message, topics=["gps"], timeout=20)
+        except:
+            pass
     
+    def callGps(self):
+        try:
+            if self.location is None or self.location[0] is None or self.location[1] is None:
+                location = hologram.network.location
+                i = 0
+                while location is None or i < 10:
+                    if location is None:
+                        time.sleep(1)
+                        i += 1
+                        location = hologram.network.location
+
+                if location is None:
+                    self.location[0] = location.latitude
+                    self.location[1] = location.longitude
+                    self.compressGps(self.location[0], self.location[1])
+                    return false
+            else:
+                self.compressGps(self.location[0], self.location[1])
+        except:
+            pass
+
     def run(self):
         self.serialPort = serial.Serial("/dev/ttyAMA0", 9600, timeout=5)
-        self.start_time = 0
+        self.start_time = time.time() - 200
         self.hologram = HologramCloud({'devicekey':'ujk{]5pX'}, network='cellular')
         if self.hologram.network.getConnectionStatus() != 1:
             self.hologram.network.disconnect()
@@ -72,7 +96,12 @@ class GPSD(Daemon):
         gpsIn = ""
         while True:
             while gpsIn.find('GGA') == -1:
-                gpsIn = self.serialPort.readline()  
+                elapsed_time = time.time() - self.start_time
+                gpsIn = self.serialPort.readline()
+                if elapsed_time > 1200:
+                    self.callGps()
+                    self.start_time = time.time() - 200
+                    
             if gpsIn.find('GGA') != -1:
                 try:
                     location = pynmea2.parse(gpsIn)
@@ -111,24 +140,7 @@ class GPSD(Daemon):
                 sys.stderr.write("Invalid message\n")
                 return false
         if parts[0] == "gps":
-            try:
-                if self.location is None or self.location[0] is None or self.location[1] is None:
-                    location = hologram.network.location
-
-                    if location is None:
-                        location = hologram.network.location
-
-                    if location is None:
-                        location = false
-                    else:
-                        self.location[0] = location.latitude
-                        self.location[1] = location.longitude
-            except:
-                pass
-            compressGps(self.location[0], self.location[1])
-        elif parts[0] == "gpsd":
-            message = str(self.location[0])+":"+str(self.location[1])
-            self.hologram.sendMessage(message, topics=["gps"])
+            self.callGps()
         elif parts[0] == "cmd":
             try:
                 sys.stderr.write("Running CMD: "+str(parts[1])+"\n")
