@@ -28,6 +28,10 @@ class GPSD(Daemon):
         truckFile.close()
 
     def addLocation(self, lat, lon):
+        if lat < 2:
+            return false
+        if lon > -2:
+            return false
         moved = distance.distance(self.location, (lat, lon)).km
         elapsed_time = time.time() - self.start_time
         if elapsed_time > 118:
@@ -37,7 +41,7 @@ class GPSD(Daemon):
                 gpsFile = open("/root/gps.in", "w")
                 gpsFile.write((str(lat)+":"+str(lon)).encode('utf8'));
                 gpsFile.close()
-                call("node /root/cl-lcr-daemon/gpsd/convert.js", shell=True)
+                call("/usr/local/bin/node /root/cl-lcr-daemon/gpsd/convert.js", shell=True)
                 time.sleep(2)
                 gpsFile2 = open("/root/gps.out", "r")
                 message = gpsFile2.readline().rstrip()
@@ -101,9 +105,9 @@ class GPSD(Daemon):
                 return false
         if parts[0] == "gps":
             gpsFile = open("/root/gps.in", "w")
-            gpsFile.write((str(lat)+":"+str(lon)).encode('utf8'));
+            gpsFile.write((str(self.location[0])+":"+str(self.location[1])).encode('utf8'));
             gpsFile.close()
-            call("node /root/cl-lcr-daemon/gpsd/convert.js", shell=True)
+            call("/usr/local/bin/node /root/cl-lcr-daemon/gpsd/convert.js", shell=True)
             time.sleep(2)
             gpsFile2 = open("/root/gps.out", "r")
             message = gpsFile2.readline().rstrip()
