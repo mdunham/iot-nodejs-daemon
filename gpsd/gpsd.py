@@ -112,7 +112,7 @@ class GPSD(Daemon):
                 return false
         if parts[0] == "gps":
             try:
-                if ! self.location or ! self.location[0] or ! self.location[1]:
+                if self.location is None or self.location[0] is None or self.location[1] is None:
                     location = hologram.network.location
 
                     if location is None:
