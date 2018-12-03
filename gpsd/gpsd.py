@@ -44,11 +44,8 @@ class GPSD(Daemon):
             moved = distance.distance(self.location, (lat, lon)).km
             if elapsed_time > (118 * self.multiplier):
                 if moved > 0.50:
-                    self.location = (lat, lon)
-                    self.start_time = time.time()
                     self.compressGps(lat, lon)
                 elif elapsed_time > (880 * self.multiplier):
-                    self.start_time = time.time()
                     self.compressGps(lat, lon)
         except:
             sys.stderr.write("Add Location Error")
@@ -79,28 +76,20 @@ class GPSD(Daemon):
             pass
     
     def callGps(self, forceHologram=None):
-        try:
-            if self.location is None or self.location[0] is None or self.location[1] is None or forceHologram is not None:
+        if self.location is None or self.location[0] is None or self.location[1] is None or forceHologram is not None:
+            location = self.hologram.network.location
+            i = 0
+            while location is None and i < 5:
+                time.sleep(1)
                 location = self.hologram.network.location
-                i=0
-                while location is None and i < 10:
-                    location = self.hologram.network.location
-                    time.sleep(1)
-                    if location is None:
-                        i += 1
-                    else:
-                        i = 10
-
-                if location is not None:
-                    self.location = (location.latitude,location.longitude)
-                    self.start_time = time.time()
-                    self.compressGps(self.location[0], self.location[1])
-            else:
-                self.start_time = time.time()
-                self.compressGps(self.location[0], self.location[1])
-        except:
-            sys.stderr.write("Call GPS Error")
-            pass
+                if location is None:
+                    i += 1
+                else:
+                    i = 10
+            if location is not None:
+                self.compressGps(location.latitude, location.longitude)
+        else:
+            self.compressGps(self.location[0], self.location[1])
     
     def run(self):
         self.serialPort = serial.Serial("/dev/ttyAMA0", 9600, timeout=5)
@@ -123,7 +112,6 @@ class GPSD(Daemon):
                 elapsed_time = time.time() - self.start_time
                 gpsIn = self.serialPort.readline()
                 if elapsed_time > (1200 * self.multiplier):
-                    self.start_time = time.time()
                     self.callGps()
             if gpsIn.find('GGA') != -1:
                 try:
@@ -132,7 +120,6 @@ class GPSD(Daemon):
                     gpsIn = self.serialPort.readline()
                 except:
                     gpsIn = self.serialPort.readline()
-                    sys.stderr.write("Main Loop 2 Error")
                     pass
             
     def tail(self, f, n, offset=0):
@@ -163,8 +150,10 @@ class GPSD(Daemon):
                 sys.stderr.write("Invalid message\n")
                 return False
         if parts[0] == "gps":
+            self.start_time = time.time() - 1000
             self.callGps()
         elif parts[0] == "gpsd":
+            self.start_time = time.time() - 1000
             self.callGps(True)
         elif parts[0] == "cmd":
             try:
