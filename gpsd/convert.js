@@ -29,7 +29,7 @@ function compressGps() {
 	try {
 		fs.readFile(gpsInPath, { encoding: 'utf-8' }, function(err, data){
 			if ( ! err) {
-				data = data.rtrim();
+				data = data.trim();
 
 				if (data.indexOf(':') === -1) return process.exit(1);
 
