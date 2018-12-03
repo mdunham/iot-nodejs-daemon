@@ -68,14 +68,13 @@ class GPSD(Daemon):
             if self.location is None or self.location[0] is None or self.location[1] is None or forceHologram is not None:
                 location = self.hologram.network.location
                 i=0
-                while location is None:
+                while location is None and i < 10:
                     location = self.hologram.network.location
                     time.sleep(1)
-                    if str(i) == "10" or location is not None:
-                        print "got location"
-                        break
-                    else:
+                    if location is None:
                         i += 1
+                    else:
+                        i = 10
 
                 if location is not None:
                     self.location = (location.latitude,location.longitude)
