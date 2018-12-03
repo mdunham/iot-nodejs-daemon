@@ -45,12 +45,9 @@ function compressGps() {
 					return process.exit(0);
 				}
 				
-				lat = lat.toString().replace('.', '');
-				lon = lon.toString().replace(/\.|\-/g, '');
-
-				lat = lat.match(/..|./g);
-				lon = lon.match(/..|./g);
-
+				lat = lat.replace('.', '').match(/..|./g);
+				lon = lon.replace(/\.|\-/g, '').match(/..|./g);
+				
 				for (var i = 0; i < lat.length; i++) {
 					newLat = newLat + String.fromCharCode(lat[i]);
 				}
