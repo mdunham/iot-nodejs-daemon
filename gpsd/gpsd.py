@@ -27,6 +27,11 @@ class GPSD(Daemon):
         uuidFile.close()
         truckFile.close()
         self.multiplier = 1
+        currentDT = datetime.datetime.now()
+        if currentDT.hour > 18 or currentDT.hour < 8:
+            self.multiplier = 4
+        else:
+            self.multiplier = 1
     
     def addLocation(self, lat, lon):
         try:
@@ -46,12 +51,16 @@ class GPSD(Daemon):
                     self.start_time = time.time()
                     self.compressGps(lat, lon)
         except:
-            sys.stderr.write("Add Location Error: ")
-            sys.stderr.write(sys.exc_info()[0] + "\n")
+            sys.stderr.write("Add Location Error")
             pass
     
     def compressGps(self, lat, lon):
         try:
+            currentDT = datetime.datetime.now()
+            if currentDT.hour > 18 or currentDT.hour < 8:
+                self.multiplier = 4
+            else:
+                self.multiplier = 1
             elapsed_time = time.time() - self.start_time
             moved = distance.distance(self.location, (lat, lon)).km
             if moved > 0.50 or elapsed_time > (880 * self.multiplier):
@@ -60,14 +69,13 @@ class GPSD(Daemon):
                 gpsFile.write((str(lat)+":"+str(lon)).encode('utf8'));
                 gpsFile.close()
                 call("/usr/local/bin/node /root/cl-lcr-daemon/gpsd/convert.js", shell=True)
-                time.sleep(1)
+                time.sleep(2)
                 gpsFile2 = open("/root/gps.out", "r")
                 message = gpsFile2.readline().rstrip()
                 gpsFile2.close()
                 self.hologram.sendMessage(message, topics=["gps"], timeout=20)
         except:
-            sys.stderr.write("Compress GPS Error: ")
-            sys.stderr.write(sys.exc_info()[0] + "\n")
+            sys.stderr.write("Compress GPS Error")
             pass
     
     def callGps(self, forceHologram=None):
@@ -91,8 +99,7 @@ class GPSD(Daemon):
                 self.start_time = time.time()
                 self.compressGps(self.location[0], self.location[1])
         except:
-            sys.stderr.write("Call GPS Error: ")
-            sys.stderr.write(sys.exc_info()[0] + "\n")
+            sys.stderr.write("Call GPS Error")
             pass
     
     def run(self):
@@ -112,34 +119,22 @@ class GPSD(Daemon):
             sys.stderr.write("connection error\n")
         gpsIn = ""
         while True:
-            try:
-                while gpsIn.find('GGA') == -1:
-                    elapsed_time = time.time() - self.start_time
-                    gpsIn = self.serialPort.readline()
-                    if elapsed_time > (1200 * self.multiplier):
-                        self.start_time = time.time()
-                        self.callGps()
-            except:
-                sys.stderr.write("Main Loop 1 Error: ")
-                sys.stderr.write(sys.exc_info()[0] + "\n")
-                pass
+            while gpsIn.find('GGA') == -1:
+                elapsed_time = time.time() - self.start_time
+                gpsIn = self.serialPort.readline()
+                if elapsed_time > (1200 * self.multiplier):
+                    self.start_time = time.time()
+                    self.callGps()
             if gpsIn.find('GGA') != -1:
                 try:
                     location = pynmea2.parse(gpsIn)
                     self.addLocation(location.latitude, location.longitude)
-                    gpsIn = ""
+                    gpsIn = self.serialPort.readline()
                 except:
-                    gpsIn = ""
-                    sys.stderr.write("Main Loop 2 Error: ")
-                    sys.stderr.write(sys.exc_info()[0] + "\n")
+                    gpsIn = self.serialPort.readline()
+                    sys.stderr.write("Main Loop 2 Error")
                     pass
-            time.sleep(1)
-            currentDT = datetime.datetime.now()
-            if currentDT.hour > 18 or currentDT.hour < 8:
-                self.multiplier = 5
-            else:
-                self.multiplier = 1
-    
+            
     def tail(self, f, n, offset=0):
         data = ""
         try:
