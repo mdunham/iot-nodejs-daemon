@@ -13,7 +13,7 @@ try {
 	if (fs.existsSync(gpsInPath)) {
 		compressGps();
 	} else {
-		console.log('GPS.in Does Not Exists', err);
+		console.log('GPS.in Does Not Exists');
 		process.exit(1);
 	}
 } catch (err) {
@@ -35,14 +35,18 @@ function compressGps() {
 
 				let 
 					parts = data.split(':'),
-					lat = parts[0],
-					lon = parts[1],
+					lat = parts[0].toString(),
+					lon = parts[1].toString(),
 					newLat = '',
 					newLon = '';
 
+				if ( ! parseFloat(lon) || ! parseFloat(lat) || lat === "." || lon === "-." || ! lat.length || ! lon.length) {
+					console.log('Bad lat or lon');
+					return process.exit(0);
+				}
+				
 				lat = lat.toString().replace('.', '');
 				lon = lon.toString().replace(/\.|\-/g, '');
-				if ( ! parseInt(lat) || ! parseInt(lon)) return console.log('Empty or zeroed lat/lon') && process.exit(1);
 
 				lat = lat.match(/..|./g);
 				lon = lon.match(/..|./g);
@@ -54,6 +58,7 @@ function compressGps() {
 				for (var i = 0; i < lon.length; i++) {
 					newLon = newLon + String.fromCharCode(lon[i]);
 				}
+				
 				try {
 					fs.writeFile(gpsOutPath, newLat + '~' + newLon, function(err) {
 						if (err) return console.log('Unable to write gps.out', err) && process.exit(1);
@@ -68,6 +73,7 @@ function compressGps() {
 			}
 		});
 	} catch (err) {
-		return console.log('Unable to open gps.in', err) && process.exit(1);
+		console.log('Unable to open gps.in', err);
+		return process.exit(1);
 	}
 }
