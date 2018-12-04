@@ -22,9 +22,6 @@ var
 		}
 		console.log('Connected to the SQLite database.');
 	}),
-	
-	fieldParams = {},
-	
 	// Device Endianess
 	endian = console.log('Endian Type: ' + (endian = os.endianness())) || endian,
 		
@@ -34,14 +31,27 @@ var
 	// Mobile App Bluetooth Peripherial Service
 	server = new ble(device),
 	
+	rcIntH,
+	fieldParams = {},
+	
 	// Tell the LCR to connect loopable
 	runConnect = (count) => {
 		device.connect((status) => {
 			if ( ! status) {
-				console.log('UNABLE TO CONNECT TO LCR #' + count);
+				console.log('# NO LCR CONNECTED #');
+				clearInterval(rcIntH);
 				setTimeout(runConnect.bind(null, ++count), 2500);
 			} else {
-				console.log('###### LCR CONNECTED ######');
+				console.log('# LCR CONNECTED #');
+				clearInterval(rcIntH);
+				rcIntH = setInterval(() => {
+					// Check for the LCR meter connection
+					if ( ! device.isConnected()) {
+						console.log('# LCR LOST CONNECTION #');
+						clearInterval(rcIntH);
+						runConnect(1);
+					}
+				}, 5000);
 				device.checkStatus(function(status, productID, productName){
 					console.log(productName);
 					device.setField(0x25, [0x02], (status, deviceByte) => {
@@ -58,10 +68,7 @@ var
 	};
 
 // Check for the LCR meter connection
-if (device.isConnected()) {
-	console.log('------ LCR Already Connected ------');
-} else {
-	// Keep trying to connect until it's found
+if ( ! device.isConnected()) {
 	runConnect(1);
 }
 
