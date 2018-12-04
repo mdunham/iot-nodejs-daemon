@@ -112,8 +112,8 @@ class GPSD(Daemon):
         except:
             sys.stderr.write("connection error\n")
             pass
-        gpsIn = ""
         while True:
+            gpsIn = ""
             while gpsIn.find('GGA') == -1:
                 elapsed_time = time.time() - self.start_time
                 gpsIn = self.serialPort.readline()
@@ -124,17 +124,15 @@ class GPSD(Daemon):
                     location = pynmea2.parse(gpsIn)
                     if location.latitude is not None and location.longitude is not None:
                         self.addLocation(location.latitude, location.longitude)
-                    gpsIn = "NONE"
                 except:
-                    gpsIn = "NONE"
                     pass
-            time.sleep(1)
+            time.sleep(5)
             
     def tail(self, f, n, offset=0):
         data = ""
         try:
             with open(f, 'r') as myfile:
-                data=myfile.read()
+                data = myfile.read()
                 myfile.close()
             if data != "":
                 n = int(n) * -1
