@@ -35,7 +35,7 @@ if __name__ == '__main__':
         while True:
             try:
                 loopCount += 1
-                if str(gpsd.fix.latitude) != "0.0":
+                if str(gpsd.fix.latitude) != "nan" and str(gpsd.fix.latitude) != "0.0" and gpsd.fix.latitude is not None:
                     gpsFile = open("/root/gps.in", "w")
                     gpsFile.write(str(gpsd.fix.latitude)+":"+str(gpsd.fix.longitude)+":"+str(gpsd.fix.speed));
                     gpsFile.close()
