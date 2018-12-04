@@ -12,8 +12,9 @@
 const sqlite3 = require('sqlite3');
 const lcr = require('./lib/lcr.js');
 const ble = require('./lib/ble.js');
+const os = require('os');
 
-let 
+var 
 	// Local SQLite Database
 	db = new sqlite3.Database('./db/lcr-cl.db', (err) => {
 		if (err) {
@@ -21,8 +22,8 @@ let
 		}
 		console.log('Connected to the SQLite database.');
 	}),
-			
-	fieldParams = {},
+	// Device Endianess
+	endian = console.log('Endian Type: ' + (endian = os.endianness())) || endian,
 		
 	// LCR Device API
 	device = new lcr.device('ttyUSB0', 250, 255),
@@ -30,19 +31,27 @@ let
 	// Mobile App Bluetooth Peripherial Service
 	server = new ble(device),
 	
+	rcIntH,
+	fieldParams = {},
 	
-		
 	// Tell the LCR to connect loopable
 	runConnect = (count) => {
 		device.connect((status) => {
 			if ( ! status) {
-				console.log('######## COMM ERROR ########');
-				console.log('# UNABLE TO CONNECT TO LCR #');
-				console.log('######  ATTEMPTS ' + count + '  ######');
+				console.log('# NO LCR CONNECTED #');
+				clearInterval(rcIntH);
 				setTimeout(runConnect.bind(null, ++count), 2500);
 			} else {
-				console.log('###### LCR CONNECTED ######');
-
+				console.log('# LCR CONNECTED #');
+				clearInterval(rcIntH);
+				rcIntH = setInterval(() => {
+					// Check for the LCR meter connection
+					if ( ! device.isConnected()) {
+						console.log('# LCR LOST CONNECTION #');
+						clearInterval(rcIntH);
+						runConnect(1);
+					}
+				}, 5000);
 				device.checkStatus(function(status, productID, productName){
 					console.log(productName);
 					device.setField(0x25, [0x02], (status, deviceByte) => {
@@ -59,10 +68,7 @@ let
 	};
 
 // Check for the LCR meter connection
-if (device.isConnected()) {
-	console.log('------ LCR Already Connected ------');
-} else {
-	// Keep trying to connect until it's found
+if ( ! device.isConnected()) {
 	runConnect(1);
 }
 

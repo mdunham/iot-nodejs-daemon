@@ -63,6 +63,7 @@ case "$1" in
 			echo $! > "$pid_file"
 			stty -F /dev/ttyAMA0 9600 &
 			sleep 1
+			(killall gpsd > /dev/null 2>&1)
 			gpsd /dev/ttyAMA0 -F /var/run/gpsd.sock &
 			sleep 1
 			/root/cl-lcr-daemon/gpsd/gpsd.py start >> "$stdout_log" 2>> "$stderr_log"
@@ -91,7 +92,7 @@ case "$1" in
 			(hologram modem disconnect >/dev/null 2>&1)
 			(killall pythyon2 >/dev/null 2>&1) 
 			(killall python >/dev/null 2>&1) 
-			(killall gpsd.py >/dev/null 2>&1) 
+			(killall gpsd >/dev/null 2>&1) 
 			(killall node >/dev/null 2>&1) 
 			if is_running; then
 				echo "Not stopped; may still be shutting down or shutdown may have failed"

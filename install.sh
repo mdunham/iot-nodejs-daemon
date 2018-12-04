@@ -30,12 +30,17 @@ echo $truckID > /etc/cl-lcr-truck
 confirm "Update the system (apt update)? [Y/n]" && (apt update; apt -y upgrade)
 confirm "Install Python, NodeJS, and other dependancies? [Y/n]" && (apt install -y python2 node gpsd gpsd-clients python-gps; curl -L hologram.io/python-install | bash; apt remove -y python3)
 
+systemctl disable gpsd.socket
+systemctl disable serial-getty@ttyS0.service
+systemctl stop gpsd.socket
+systemctl disable gpsd.socket
+
 echo "Backing up rc.local..."
 cp /etc/rc.local /etc/rc.backup
 echo "#!/bin/sh -e" > /etc/rc.local
 echo "hciconfig hci0 up" >> /etc/rc.local
 echo "(stty -F /dev/ttyAMA0 9600) &" >> /etc/rc.local
-echo "sleep 1; gpsd /dev/ttyAMA0 -F /var/run/gpsd.sock" >> /etc/rc.local
+echo "(killall gpsd > /dev/null 2>&1); sleep 1; gpsd /dev/ttyAMA0 -F /var/run/gpsd.sock" >> /etc/rc.local
 echo "/usr/bin/tvservice -o" >> /etc/rc.local
 echo "exit 0" >> /etc/rc.local
 echo "New rc.local created"
