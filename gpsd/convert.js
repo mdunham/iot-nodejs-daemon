@@ -4,10 +4,11 @@
  * @author Matthew Dunham <matt@hotcoffeydesign.com>
  */
 
-const 
-	fs = require('fs'),
-	gpsInPath = '/root/gps.in',
-	gpsOutPath = '/root/gps.out';
+"use strict";
+
+const fs = require('fs');
+const gpsInPath = '/root/gps.in';
+const gpsOutPath = '/root/gps.out';
 
 try {
 	if (fs.existsSync(gpsInPath)) {

@@ -12,8 +12,9 @@
 const sqlite3 = require('sqlite3');
 const lcr = require('./lib/lcr.js');
 const ble = require('./lib/ble.js');
+const os = require('os');
 
-let 
+var 
 	// Local SQLite Database
 	db = new sqlite3.Database('./db/lcr-cl.db', (err) => {
 		if (err) {
@@ -21,8 +22,11 @@ let
 		}
 		console.log('Connected to the SQLite database.');
 	}),
-			
+	
 	fieldParams = {},
+	
+	// Device Endianess
+	endian = console.log('Endian Type: ' + (endian = os.endianness())) || endian,
 		
 	// LCR Device API
 	device = new lcr.device('ttyUSB0', 250, 255),
@@ -30,19 +34,14 @@ let
 	// Mobile App Bluetooth Peripherial Service
 	server = new ble(device),
 	
-	
-		
 	// Tell the LCR to connect loopable
 	runConnect = (count) => {
 		device.connect((status) => {
 			if ( ! status) {
-				console.log('######## COMM ERROR ########');
-				console.log('# UNABLE TO CONNECT TO LCR #');
-				console.log('######  ATTEMPTS ' + count + '  ######');
+				console.log('UNABLE TO CONNECT TO LCR #' + count);
 				setTimeout(runConnect.bind(null, ++count), 2500);
 			} else {
 				console.log('###### LCR CONNECTED ######');
-
 				device.checkStatus(function(status, productID, productName){
 					console.log(productName);
 					device.setField(0x25, [0x02], (status, deviceByte) => {
