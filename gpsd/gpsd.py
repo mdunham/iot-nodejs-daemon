@@ -4,7 +4,7 @@
 # pip2 install geopy
 # pip2 install serial
 
-import os, sys, time, serial, pynmea2, zlib, base64
+import os, sys, time, serial, pynmea2, zlib, base64, datetime
 from daemon import Daemon
 from Hologram.HologramCloud import HologramCloud
 from geopy import distance
@@ -26,30 +26,82 @@ class GPSD(Daemon):
         self.uuid = uuidFile.readline().rstrip()
         uuidFile.close()
         truckFile.close()
-
+        self.multiplier = 1
+        currentDT = datetime.datetime.now()
+        if currentDT.hour > 18 or currentDT.hour < 8:
+            self.multiplier = 4
+        else:
+            self.multiplier = 1
+    
     def addLocation(self, lat, lon):
-        moved = distance.distance(self.location, (lat, lon)).km
-        elapsed_time = time.time() - self.start_time
-        if elapsed_time > 118:
-            if moved > 0.25:
-                self.location = (lat, lon)
+        try:
+            elapsed_time = time.time() - self.start_time
+            if lat is None or lon is None:
+                if elapsed_time > (230 * self.multiplier):
+                    self.start_time = time.time()
+                    self.callGps(True)
+                return False
+            moved = distance.distance(self.location, (lat, lon)).miles
+            if elapsed_time > (120 * self.multiplier):
+                if moved > 0.9:
+                    self.compressGps(lat, lon)
+                elif elapsed_time > (880 * self.multiplier):
+                    self.compressGps(lat, lon)
+        except:
+            print "Add Location Error"
+            pass
+    
+    def compressGps(self, lat, lon):
+        try:
+            currentDT = datetime.datetime.now()
+            if currentDT.hour > 18 or currentDT.hour < 8:
+                self.multiplier = 4
+            else:
+                self.multiplier = 1
+            elapsed_time = time.time() - self.start_time
+            moved = distance.distance(self.location, (lat, lon)).miles
+            if moved > 0.9 or elapsed_time > (880 * self.multiplier):
                 self.start_time = time.time()
+                self.location = (lat, lon)
                 gpsFile = open("/root/gps.in", "w")
                 gpsFile.write((str(lat)+":"+str(lon)).encode('utf8'));
                 gpsFile.close()
-                call("node /root/cl-lcr-daemon/gpsd/convert.js", shell=True)
+                call("/usr/local/bin/node /root/cl-lcr-daemon/gpsd/convert.js", shell=True)
                 time.sleep(2)
                 gpsFile2 = open("/root/gps.out", "r")
                 message = gpsFile2.readline().rstrip()
                 gpsFile2.close()
                 self.hologram.sendMessage(message, topics=["gps"], timeout=20)
-
+        except:
+            print "Compress GPS Error"
+            pass
+    
+    def callGps(self, forceHologram=None):
+        try:
+            if self.location is None or self.location[0] is None or self.location[1] is None or forceHologram is not None:
+                location = self.hologram.network.location
+                i = 0
+                while location is None and i < 5:
+                    time.sleep(1)
+                    location = self.hologram.network.location
+                    if location is None:
+                        i += 1
+                    else:
+                        i = 10
+                if location is not None:
+                    self.compressGps(location.latitude, location.longitude)
+            else:
+                self.compressGps(self.location[0], self.location[1])
+        except:
+            pass
+    
     def run(self):
         self.serialPort = serial.Serial("/dev/ttyAMA0", 9600, timeout=5)
-        self.start_time = 0
+        self.start_time = time.time() - 200
         self.hologram = HologramCloud({'devicekey':'ujk{]5pX'}, network='cellular')
         if self.hologram.network.getConnectionStatus() != 1:
             self.hologram.network.disconnect()
+            time.sleep(1)
         try:
             result = self.hologram.network.connect()
             if result == False:
@@ -59,19 +111,25 @@ class GPSD(Daemon):
                 self.hologram.event.subscribe('message.received', self.receivedMessage)
         except:
             sys.stderr.write("connection error\n")
+            pass
         gpsIn = ""
         while True:
             while gpsIn.find('GGA') == -1:
-                gpsIn = self.serialPort.readline()  
+                elapsed_time = time.time() - self.start_time
+                gpsIn = self.serialPort.readline()
+                if elapsed_time > (1200 * self.multiplier):
+                    self.callGps()
             if gpsIn.find('GGA') != -1:
                 try:
                     location = pynmea2.parse(gpsIn)
-                    self.addLocation(location.latitude, location.longitude)
+                    if location.latitude is not None and location.longitude is not None:
+                        self.addLocation(location.latitude, location.longitude)
+                    gpsIn = "NONE"
                 except:
+                    gpsIn = "NONE"
                     pass
-                gpsIn = ""
             time.sleep(1)
-
+            
     def tail(self, f, n, offset=0):
         data = ""
         try:
@@ -83,8 +141,9 @@ class GPSD(Daemon):
                 data = data[n:]
         except:
             data = "error"
+            pass
         return data
-
+    
     def receivedMessage(self):
         try:
             message = self.hologram.popReceivedMessage()
@@ -98,21 +157,13 @@ class GPSD(Daemon):
                 parts = message.split(':')
             else:
                 sys.stderr.write("Invalid message\n")
-                return false
+                return False
         if parts[0] == "gps":
-            gpsFile = open("/root/gps.in", "w")
-            gpsFile.write((str(lat)+":"+str(lon)).encode('utf8'));
-            gpsFile.close()
-            call("node /root/cl-lcr-daemon/gpsd/convert.js", shell=True)
-            time.sleep(2)
-            gpsFile2 = open("/root/gps.out", "r")
-            message = gpsFile2.readline().rstrip()
-            gpsFile2.close()
-            self.hologram.sendMessage(message, topics=["gps"], timeout=20)
-            self.hologram.sendMessage(message, topics=["gps"], timeout=200)
+            self.start_time = time.time() - 1000
+            self.callGps()
         elif parts[0] == "gpsd":
-            message = str(self.location[0])+":"+str(self.location[1])
-            self.hologram.sendMessage(message, topics=["gps"])
+            self.start_time = time.time() - 1000
+            self.callGps(True)
         elif parts[0] == "cmd":
             try:
                 sys.stderr.write("Running CMD: "+str(parts[1])+"\n")

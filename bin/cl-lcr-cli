@@ -49,7 +49,8 @@ case "$1" in
 		echo "Registration Complete"
 	;;
 	verify)
-		systemctl is-active --quiet cl-lcr-daemon || (service cl-lcr-daemon start; print "service was down!")
+		mDATE=`date '+%Y-%m-%d %H:%M:%S'`
+		systemctl is-active --quiet cl-lcr-daemon || (service cl-lcr-daemon start && echo "$mDATE - Service was down!" >> /var/log/cl-lcr-daemon.err)
 		pid=""
 		if [ -f "/tmp/daemon-py-gpsd.pid" ]; then
 			pid=$(cat /tmp/daemon-py-gpsd.pid 2>/dev/null)
@@ -58,9 +59,13 @@ case "$1" in
 			kill -0 $pid > /dev/null 2>&1 || (pid=""; echo "GPSD PID Detected but signal failed.")
 		fi
 		if [ -z "$pid" ]; then
+			(/root/cl-lcr-daemon/gpsd/gpsd.py stop > /dev/null 2>&1)
 			(hologram modem disconnect > /dev/null 2>&1)
 			(hologram network disconnect > /dev/null 2>&1)
-			(/root/cl-lcr-daemon/gpsd/gpsd.py start >> /var/log/cl-lcr-daemon.log) &
+			(/root/cl-lcr-daemon/gpsd/gpsd.py start >> /var/log/gpsd.log 2>> /var/log/gpsd.err)
+			(echo "$mDATE - Forced restart of GPSD" >> /var/log/gpsd.err 2>&1)
+		else
+			(echo "$mDATE - Checked GPSD is good" >> /var/log/gpsd.err 2>&1)
 		fi
 	;;
 	unregister)
