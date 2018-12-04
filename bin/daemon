@@ -10,7 +10,7 @@
 ### END INIT INFO
 
 dir="/root/cl-lcr-daemon/"
-cmd="node ."
+cmd="/usr/local/bin/node ."
 name="cl-lcr-daemon"
 pid_file="/var/run/$name.pid"
 stdout_log="/var/log/$name.log"
@@ -61,10 +61,12 @@ case "$1" in
 			sleep 3;
 			($cmd >> "$stdout_log" 2>> "$stderr_log") &
 			echo $! > "$pid_file"
-			stty -F /dev/ttyAMA0 9600 &
+			stty -F /dev/ttyAMA0 9600
 			sleep 1
 			(killall gpsd > /dev/null 2>&1)
-			gpsd /dev/ttyAMA0 -F /var/run/gpsd.sock &
+			/usr/sbin/gpsd /dev/ttyAMA0 -F /var/run/gpsd.sock
+			sleep 1
+			(/root/cl-lcr-daemon/gpsd/poller.py >> /var/log/gpsd-poller.log 2>&1) &
 			sleep 1
 			/root/cl-lcr-daemon/gpsd/gpsd.py start >> "$stdout_log" 2>> "$stderr_log"
 			if ! is_running; then
@@ -91,6 +93,7 @@ case "$1" in
 			(/root/cl-lcr-daemon/gpsd/gpsd.py stop >> "$stdout_log" 2>> "$stderr_log") &
 			(hologram modem disconnect >/dev/null 2>&1)
 			(killall pythyon2 >/dev/null 2>&1) 
+			(killall poller.py >/dev/null 2>&1) 
 			(killall python >/dev/null 2>&1) 
 			(killall gpsd >/dev/null 2>&1) 
 			(killall node >/dev/null 2>&1) 

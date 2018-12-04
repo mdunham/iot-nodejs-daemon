@@ -1,33 +1,51 @@
-#! /usr/bin/python
+#!/usr/bin/python
  
 import os
 from gps import *
 from time import *
 import time
+from subprocess import call
 import threading
- 
+
 gpsd = None
 class GpsPoller(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
-        global gpsd #bring it in scope
-        gpsd = gps(mode=WATCH_ENABLE) #starting the stream of info
+        global gpsd
+        try:
+            gpsd = gps(mode=WATCH_ENABLE)
+        except:
+            call("/usr/sbin/gpsd /dev/ttyAMA0 -F /var/run/gpsd.sock", shell=True)
         self.current_value = None
-        self.running = True #setting the thread running to true
- 
+        self.running = True
+     
     def run(self):
         global gpsd
         while gpsp.running:
-            gpsd.next() #this will continue to loop and grab EACH set of gpsd info to clear the buffer
- 
+            try:
+                gpsd.next()
+            except:
+                pass 
+
 if __name__ == '__main__':
-    gpsp = GpsPoller() # create the thread
-    gpsp.start()
-    while True:
-        try:
-            gpsFile = open("/root/gps.in2", "w")
-            gpsFile.write((str(gpsd.fix.latitude)+":"+str(gpsd.fix.longitude)+":"+str(gpsd.fix.speed)+":"+str(gpsd.fix.altitude)).encode('utf8'));
-            gpsFile.close()
-        except:
-            pass
-        time.sleep(5) #set to whatever    
+    try:
+        gpsp = GpsPoller()
+        gpsp.start()
+        loopCount = 0
+        while True:
+            try:
+                loopCount += 1
+                if str(gpsd.fix.latitude) != "0.0":
+                    gpsFile = open("/root/gps.in", "w")
+                    gpsFile.write(str(gpsd.fix.latitude)+":"+str(gpsd.fix.longitude)+":"+str(gpsd.fix.speed));
+                    gpsFile.close()
+                elif loopCount > 15:
+                    loopCount = 0
+                    call("/usr/sbin/gpsd /dev/ttyAMA0 -F /var/run/gpsd.sock", shell=True)
+            except:
+                pass
+            time.sleep(0.5)
+    except (KeyboardInterrupt, SystemExit): #when you press ctrl+c
+        print "\nKilling Thread..."
+        gpsp.running = False
+        gpsp.join()   

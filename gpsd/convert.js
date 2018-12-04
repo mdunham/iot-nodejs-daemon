@@ -38,6 +38,7 @@ function compressGps() {
 					parts = data.split(':'),
 					lat = parts[0].toString(),
 					lon = parts[1].toString(),
+					speed = Math.floor(parseFloat(parts[2])).toString(),
 					newLat = '',
 					newLon = '';
 
@@ -55,6 +56,10 @@ function compressGps() {
 
 				for (var i = 0; i < lon.length; i++) {
 					newLon = newLon + String.fromCharCode(lon[i]);
+				}
+				
+				if ( ! isNaN(speed) && speed > 0 && speed < 255) {
+					newLon = newLon + '~' + String.fromCharCode(speed);
 				}
 				
 				try {
