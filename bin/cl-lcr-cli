@@ -65,7 +65,9 @@ case "$1" in
 			(/root/cl-lcr-daemon/gpsd/gpsd.py start >> /var/log/gpsd.log 2>> /var/log/gpsd.err)
 			(echo "$mDATE - Forced restart of GPSD" >> /var/log/gpsd.err 2>&1)
 			killall python > /dev/null 2>&1
-			killall gpsd > /dev/null 2>&1
+			killall python2 > /dev/null 2>&1
+			killall poller.py > /dev/null 2>&1
+			killall gpsd.py > /dev/null 2>&1
 			stty -F /dev/ttyAMA0 9600 > /dev/null 2>&1
 			gpsd /dev/ttyAMA0 -F /var/run/gpsd.sock > /dev/null 2>&1
 			/root/cl-lcr-daemon/gpsd/poller.py >> /var/log/gpsd-poller.log 2>&1 &

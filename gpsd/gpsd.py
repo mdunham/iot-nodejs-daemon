@@ -101,7 +101,7 @@ class GPSD(Daemon):
     def run(self):
 #        self.serialPort = serial.Serial("/dev/ttyAMA0", 9600, timeout=5)
         self.start_time = time.time() - 200
-        self.hologram = HologramCloud({'devicekey':'ujk{]5pX'}, network='cellular')
+        self.hologram = HologramCloud({'devicekey':'ujk{]5pX'})
         if self.hologram.network.getConnectionStatus() != 1:
             self.hologram.network.disconnect()
             time.sleep(1)
