@@ -32,7 +32,7 @@ class GPSD(Daemon):
         if currentDT.hour > 18 or currentDT.hour < 8:
             self.multiplier = 20
         else:
-            self.multiplier = 1
+            self.multiplier = 2
     
     def addLocation(self, lat, lon):
         try:
@@ -58,15 +58,8 @@ class GPSD(Daemon):
             if currentDT.hour > 18 or currentDT.hour < 8:
                 self.multiplier = 20
             else:
-                self.multiplier = 1
-#            elapsed_time = time.time() - self.start_time
-#            moved = distance.distance(self.location, (lat, lon)).miles
-#            if moved > 0.9 or elapsed_time > (880 * self.multiplier):
+                self.multiplier = 2
             self.start_time = time.time()
-#                self.location = (lat, lon)
-#                gpsFile = open("/root/gps.in", "w")
-#                gpsFile.write((str(lat)+":"+str(lon)).encode('utf8'));
-#                gpsFile.close()
             call("/usr/local/bin/node /root/cl-lcr-daemon/gpsd/convert.js", shell=True)
             time.sleep(1)
             gpsFile2 = open("/root/gps.out", "r")
@@ -99,7 +92,6 @@ class GPSD(Daemon):
             pass
     
     def run(self):
-#        self.serialPort = serial.Serial("/dev/ttyAMA0", 9600, timeout=5)
         self.start_time = time.time() - 200
         self.hologram = HologramCloud({'devicekey':'ujk{]5pX'}, network='cellular')
         if self.hologram.network.getConnectionStatus() != 1:
@@ -116,19 +108,6 @@ class GPSD(Daemon):
             sys.stderr.write("connection error\n")
             pass
         while True:
-#            gpsIn = ""
-#            while gpsIn.find('GGA') == -1:
-#                elapsed_time = time.time() - self.start_time
-#                gpsIn = self.serialPort.readline()
-#                if elapsed_time > (1200 * self.multiplier):
-#                    self.callGps()
-#            if gpsIn.find('GGA') != -1:
-#                try:
-#                    location = pynmea2.parse(gpsIn)
-#                    if location.latitude is not None and location.longitude is not None:
-#                        self.addLocation(location.latitude, location.longitude)
-#                except:
-#                    pass
             time.sleep(220 * self.multiplier)
             self.compressGps()
             
