@@ -23,12 +23,13 @@ try {
 }
 
 /**
+ * This actually compresses the GPS cords using 2:1
  * 
- * @returns {undefined}
+ * @returns {void}
  */
 function compressGps() {
 	try {
-		fs.readFile(gpsInPath, { encoding: 'utf-8' }, function(err, data){
+		fs.readFile(gpsInPath, { encoding: 'utf-8' }, function(err, data) {
 			if ( ! err) {
 				data = data.trim();
 

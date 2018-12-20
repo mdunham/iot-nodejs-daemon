@@ -15,6 +15,7 @@ const ble = require('./lib/ble.js');
 const os = require('os');
 
 var 
+
 	// Local SQLite Database
 	db = new sqlite3.Database('./db/lcr-cl.db', (err) => {
 		if (err) {
@@ -22,6 +23,7 @@ var
 		}
 		console.log('Connected to the SQLite database.');
 	}),
+	
 	// Device Endianess
 	endian = console.log('Endian Type: ' + (endian = os.endianness())) || endian,
 		
@@ -54,7 +56,7 @@ var
 				}, 5000);
 				device.checkStatus(function(status, productID, productName){
 					console.log(productName);
-					device.setField(0x25, [0x02], (status, deviceByte) => {
+					device.disablePrinter((status, deviceByte) => {
 						device.removeTransaction(() => { 
 							device.setField(0x10, [0x00], function(status, deviceByte, data) {
 								device.setField(0x5D, [0x00, 0x00, 0x00, 0x00], function(status, deviceByte, data) {});
